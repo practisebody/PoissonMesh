@@ -37,7 +37,7 @@ void getFPS()
 	glPopMatrix();// 重置为原保存矩阵	
 }
 
-void Init(char* filename)
+void Init(int argc, char** argv)
 {
 	// Light
 	glEnable(GL_LIGHTING);
@@ -76,60 +76,15 @@ void Init(char* filename)
 	glutPositionWindow(0, 0);
 
 	// Read obj
-	theWorld.Init("dog.obj");
+	if (argc == 1)
+		theWorld.Init("dog.obj");
+	else
+		theWorld.Init(argv[1]);
 }
 
 void OnKeyDown(unsigned char key, int x, int y)
 {
-	Vector vForward = theWorld.m_Center - theWorld.m_Eye;
-	Vector vRight = vForward.OuterProduct(theWorld.GetUp());
-	switch (key)
-	{
-	case 27:
-		exit(0);
-	case 'w' :
-		theWorld.m_Eye += 0.01 / vForward.Module() * vForward;
-		theWorld.m_Center += 0.01 / vForward.Module() * vForward;
-		break;
-	case 's' :
-		theWorld.m_Eye -= 0.01 / vForward.Module() * vForward;
-		theWorld.m_Center -= 0.01 / vForward.Module() * vForward;
-		break;
-	case 'a' :
-		theWorld.m_Eye -= 0.01 / vRight.Module() * vRight;
-		theWorld.m_Center -= 0.01 / vRight.Module() * vRight;
-		break;
-	case 'd' :
-		theWorld.m_Eye += 0.01 / vRight.Module() * vRight;
-		theWorld.m_Center += 0.01 / vRight.Module() * vRight;
-		break;
-	case 'g' :
-		for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(100 * Parameters::fMagnification, 0, 0);
-		break;
-	case 'h' :
-		for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, 100 * Parameters::fMagnification, 0);
-		break;
-	case 'j' :
-		for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, 0, 100 * Parameters::fMagnification);
-		break;
-	case 't' :
-		for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(-100 * Parameters::fMagnification, 0, 0);
-		break;
-	case 'y' :
-		for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, -100 * Parameters::fMagnification, 0);
-		break;
-	case 'u' :
-		for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, 0, -100 * Parameters::fMagnification);
-		break;
-	default:
-		break;
-	}
+	theWorld.OnKeyDown(key, x, y);
 	glutPostRedisplay();
 }
 
@@ -297,7 +252,7 @@ void main(int argc, char** argv)
 	glutInitWindowSize(theWorld.m_WindowWidth, theWorld.m_WindowHeight);
 	glutCreateWindow("Project1");
 
-	Init(argv[1]);
+	Init(argc, argv);
 	glutKeyboardFunc(OnKeyDown);
 	glutSpecialFunc(OnSpecialKeyDown);
 	glutMouseFunc(OnMouseDown);

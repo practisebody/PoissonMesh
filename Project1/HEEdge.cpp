@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "HEEdge.h"
+#include "HEFace.h"
 
 HEEdge::HEEdge() : m_pair(NULL)
 {
@@ -82,7 +83,7 @@ HEEdge* HEEdge::prev()
 {
 	EdgeIterator iter = this;
 	while (iter->m_next != this)
-		;
+		++iter;
 	return iter.m_this;
 }
 
@@ -91,33 +92,51 @@ HEEdge* HEEdge::left()
 	return prev()->m_pair;
 }
 
-void HEEdge::Delete()
+void HEEdge::Delete(set<HEObject*>& deletedObjects)
+{
+	Delete(true, deletedObjects);
+}
+
+void HEEdge::Delete(bool first, set<HEObject*>& deletedObjects)
 {
 	HEVert* vLeave = m_vert;
 	HEVert* vArrive = m_next->m_vert;
-	HEEdge* eLeaveStart;
-	HEEdge* eLeaveEnd = this->m_pair->m_next;
-	HEEdge* eArriveStart;
-	HEEdge* eArriveEnd = this->m_next;
+	HEEdge* eLeave = prev();
+	HEEdge* eArrive = m_next;
 
-	for (EdgeIterator iter = eLeaveEnd; iter->m_next != eLeaveEnd; ++iter)
-		eLeaveStart = iter.m_this;
-	for (EdgeIterator iter = eArriveEnd; iter->m_next != eArriveEnd; ++iter)
-		eArriveStart = iter.m_this;
 	// It's a triangle
-	if (this->m_next->m_next->m_next == this)
+	if (m_next->m_next->m_next == this)
 	{
-		
+		eLeave->m_pair->m_pair = eArrive->m_pair;
+		eArrive->m_pair->m_pair = eLeave->m_pair;
+		deletedObjects.insert(eLeave);
+		deletedObjects.insert(eArrive);
+		deletedObjects.insert(m_face);
 	}
 	// Not a triangle
 	else
 	{
-
+		eLeave->m_next = eArrive;
+		if (m_face->m_edge == this)
+			m_face->m_edge = eArrive;
 	}
-	HEVert::EdgeIterator iter(this, vLeave), iterThis(this, vLeave);
-	do
+	if (vLeave->m_edge == this)
+			vLeave->m_edge = eArrive;
+	if (first == true)
 	{
-
-		++iter;
-	} while (iter != iterThis);
+		vector<HEEdge*> edges;
+		HEVert::EdgeIterator iter =  vArrive->beginEdge();
+		do
+		{
+			edges.push_back(&(*iter));
+			++iter;
+		} while (iter != vArrive->endEdge());
+		// move to center
+		vLeave->m_vert = (vLeave->m_vert + vArrive->m_vert) / 2;
+		// redirecting
+		for (vector<HEEdge*>::size_type i = 0; i < edges.size(); ++i)
+			edges[i]->m_vert = m_vert;
+		m_pair->Delete(false, deletedObjects);
+	}
+	deletedObjects.insert(this);
 }

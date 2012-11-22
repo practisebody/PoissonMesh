@@ -22,7 +22,7 @@ struct HEVert : public HEObject
 	virtual double Intersect(const Point& poing, const Vector& dir);
 	virtual void operator+=(Vector vector);
 	virtual void ToVerts(vector<HEVert*>& vector);
-	virtual void Delete();
+	virtual void Delete(set<HEObject*>& deletedObjects);
 };
 
 #include "HEVertIterators.h"

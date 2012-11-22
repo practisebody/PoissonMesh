@@ -17,6 +17,7 @@ public:
 	void Orient();
 	void Draw();
 	void MouseClick(int modifiers);
+	void OnKeyDown(unsigned char key, int x, int y);
 public:
 	const int m_WindowWidth;
 	const int m_WindowHeight;
@@ -25,6 +26,7 @@ public:
 	set<HEVert*> m_vertSelected;
 	int lastx, lasty;
 private:
+	void DeleteObjects(set<HEObject*>& deletedObjects);
 	HEObject* GetNearestObject();
 	Vector m_Up;
 	map<string, Material*> m_Materials;

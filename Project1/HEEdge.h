@@ -28,7 +28,8 @@ struct HEEdge : public HEObject
 	virtual void ToVerts(vector<HEVert*>& vector);
 	HEEdge* prev();
 	HEEdge* left();
-	virtual void Delete();
+	virtual void Delete(set<HEObject*>& deletedObjects);
+	void Delete(bool first, set<HEObject*>& deletedObjects);
 };
 
 #include "HEEdgeIterators.h"

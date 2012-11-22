@@ -8,7 +8,7 @@ void HEFace::Draw()
 	EdgeIterator iter = beginEdge();
 	do
 	{
-		if (m_mtl->IsTransparent() == false)
+		if (m_mtl && m_mtl->IsTransparent() == false)
 			glTexCoord2f(iter->m_text->m_x, iter->m_text->m_y);
 		glVertex3f(iter->m_vert->m_vert.m_x, iter->m_vert->m_vert.m_y, iter->m_vert->m_vert.m_z);
 		++iter;
@@ -67,9 +67,8 @@ void HEFace::ToVerts(vector<HEVert*>& vector)
 	while (iter != endVert()); 
 }
 
-void HEFace::Delete()
+void HEFace::Delete(set<HEObject*>& deletedObjects)
 {
-
 }
 
 bool HEFace::InPlane(const Point& point)

@@ -38,6 +38,6 @@ void HEVert::ToVerts(vector<HEVert*>& vector)
 	vector.push_back(this);
 }
 
-void HEVert::Delete()
+void HEVert::Delete(set<HEObject*>& deletedObjects)
 {
 }

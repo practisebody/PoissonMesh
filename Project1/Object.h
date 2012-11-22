@@ -21,5 +21,5 @@ class HEObject : public _Iteratored_Object
 {
 public:
 	virtual void ToVerts(vector<HEVert*>& set) = 0;
-	virtual void Delete() = 0;
+	virtual void Delete(set<HEObject*>& deletedObjects) = 0;
 };

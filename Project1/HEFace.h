@@ -22,7 +22,7 @@ struct HEFace : public HEObject
 	virtual double Intersect(const Point& D, const Vector& E);
 	virtual void operator+=(Vector vector);
 	virtual void ToVerts(vector<HEVert*>& vector);
-	virtual void Delete();
+	virtual void Delete(set<HEObject*>& deletedObjects);
 	bool InPlane(const Point& point);
 };
 

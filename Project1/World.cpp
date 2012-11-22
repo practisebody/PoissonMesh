@@ -93,13 +93,15 @@ void World::Draw()
 	vector<HEFace*> TransparentFaces;
 	for (vector<HEFace*>::size_type nIndex = 0; nIndex < m_Faces.size(); ++ nIndex)
 	{
-		if (m_Faces[nIndex]->m_mtl != NULL)
+		if (m_Faces[nIndex] != NULL && m_Faces[nIndex]->m_mtl != NULL)
 		{
 			if (m_Faces[nIndex]->m_mtl->IsTransparent() == false)
 				m_Faces[nIndex]->Draw();
 			else
 				TransparentFaces.push_back(m_Faces[nIndex]);
 		}
+		else
+			m_Faces[nIndex]->Draw();
 	}
 
 	// Draw Transparent Objects
@@ -256,5 +258,77 @@ void World::MouseClick(int modifiers)
 			next = (now + 1) % 3;
 			verts[next].clear();
 		}
+	}
+}
+
+void World::OnKeyDown(unsigned char key, int x, int y)
+{
+	Vector vForward = m_Center - m_Eye;
+	Vector vRight = vForward.OuterProduct(GetUp());
+	set<HEObject*> deletedObjects;
+	switch (key)
+	{
+	case 27:
+		exit(0);
+	case 'w' :
+		m_Eye += 0.01 / vForward.Module() * vForward;
+		m_Center += 0.01 / vForward.Module() * vForward;
+		break;
+	case 's' :
+		m_Eye -= 0.01 / vForward.Module() * vForward;
+		m_Center -= 0.01 / vForward.Module() * vForward;
+		break;
+	case 'a' :
+		m_Eye -= 0.01 / vRight.Module() * vRight;
+		m_Center -= 0.01 / vRight.Module() * vRight;
+		break;
+	case 'd' :
+		m_Eye += 0.01 / vRight.Module() * vRight;
+		m_Center += 0.01 / vRight.Module() * vRight;
+		break;
+	case 'g' :
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((Object*)(*iter)) += Vector(100 * Parameters::fMagnification, 0, 0);
+		break;
+	case 'h' :
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((Object*)(*iter)) += Vector(0, 100 * Parameters::fMagnification, 0);
+		break;
+	case 'j' :
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((Object*)(*iter)) += Vector(0, 0, 100 * Parameters::fMagnification);
+		break;
+	case 't' :
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((Object*)(*iter)) += Vector(-100 * Parameters::fMagnification, 0, 0);
+		break;
+	case 'y' :
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((Object*)(*iter)) += Vector(0, -100 * Parameters::fMagnification, 0);
+		break;
+	case 'u' :
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((Object*)(*iter)) += Vector(0, 0, -100 * Parameters::fMagnification);
+		break;
+	case 'z':
+		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+			(*iter)->Delete(deletedObjects);
+		m_objSelected.clear();
+		m_vertSelected.clear();
+		DeleteObjects(deletedObjects);
+		break;
+	default:
+		break;
+	}
+}
+
+void World::DeleteObjects(set<HEObject*>& deletedObjects)
+{
+	for (set<HEObject*>::iterator iter = deletedObjects.begin(); iter != deletedObjects.end(); ++iter)
+	{
+		HEFace* pFace;
+		if ((pFace = dynamic_cast<HEFace*>(*iter)) != NULL)
+			m_Faces.erase(find(m_Faces.begin(), m_Faces.end(), pFace));
+		delete *iter;
 	}
 }

@@ -2,10 +2,15 @@
 
 #include "stdafx.h"
 
+#define MATERTIAL_RED 1.0f, 0.0f, 0.0f
+#define MATERTIAL_GREEN 0.0f, 1.0f, 0.0f
+#define MATERTIAL_BLUE 0.0f, 0.0f, 1.0f
+
 struct Material
 {
 	Material();
 	static void SetMaterialWhite();
+	static void SetColorRGB(GLfloat r, GLfloat g, GLfloat b);
 	static void SetMaterialDefault();
 	void SetMaterial();
 	bool IsTransparent();

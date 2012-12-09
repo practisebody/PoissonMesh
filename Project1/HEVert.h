@@ -17,7 +17,7 @@ struct HEVert : public HEObject
 
 	Point m_vert;
     HEEdge* m_edge;  // one of the half-edges leaving the vertex
-	HEVert(GLfloat _x, GLfloat _y, GLfloat _z);
+	HEVert(GLdouble _x, GLdouble _y, GLdouble _z);
 	virtual void DrawSelected();
 	virtual double Intersect(const Point& poing, const Vector& dir);
 	virtual void operator+=(Vector vector);

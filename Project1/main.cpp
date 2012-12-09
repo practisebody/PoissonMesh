@@ -216,14 +216,11 @@ void OnMouseDrag(int x, int y)
 		GLdouble yscale = (yu * cursoru + yn * cursorn) / sqrt(yu * yu + yn * yn);
 		GLdouble zscale = (zu * cursoru + zn * cursorn) / sqrt(zu * zu + zn * zn);
 		if (fabs(xscale) > fabs(yscale) && fabs(xscale) > fabs(zscale))
-			for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-				*((Object*)(*iter))  += Vector(xscale, 0, 0);
+			theWorld.OnMouseDrag(Vector(xscale, 0.0, 0.0));
 		if (fabs(yscale) > fabs(xscale) && fabs(yscale) > fabs(zscale))
-			for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-				*((Object*)(*iter))  += Vector(0, yscale, 0);
+			theWorld.OnMouseDrag(Vector(0.0, yscale, 0.0));
 		if (fabs(zscale) > fabs(xscale) && fabs(zscale) > fabs(yscale))
-			for (set<HEVert*>::iterator iter = theWorld.m_vertSelected.begin(); iter != theWorld.m_vertSelected.end(); ++iter)
-				*((Object*)(*iter))  += Vector(0, 0, zscale);
+			theWorld.OnMouseDrag(Vector(0.0, 0.0, zscale));
 	}
 	OnMouseMove(x, y);
 }
@@ -240,6 +237,7 @@ void OnDraw()
 
 	theWorld.Orient();
 	theWorld.Draw();
+	Material::SetMaterialWhite();
 	getFPS();
 
 	glFlush();

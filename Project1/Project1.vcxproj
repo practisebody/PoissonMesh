@@ -62,6 +62,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -77,6 +79,8 @@
     <ClCompile Include="HEFace.cpp" />
     <ClCompile Include="HENullFace.cpp" />
     <ClCompile Include="HEVert.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="HalfEdge.h" />
     <ClCompile Include="main.cpp" />

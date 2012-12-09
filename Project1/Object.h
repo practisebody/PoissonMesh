@@ -8,7 +8,7 @@ class Object
 public:
 	virtual void DrawSelected() = 0;
 	virtual double Intersect(const Point&, const Vector&) = 0;
-	virtual void operator+=(Vector vector) = 0;
+	//virtual void operator+=(Vector vector) = 0;
 };
 
 class _Iteratored_Object : public Object

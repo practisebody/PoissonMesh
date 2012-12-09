@@ -16,6 +16,5 @@ public:
 	static GLfloat fMagnification;
 	static bool bLine;
 	static GLfloat& fIntersectRadius;
-private:
-	Parameters();
+	static GLfloat fRevisedMaginification();
 };

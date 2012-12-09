@@ -1,6 +1,16 @@
 #include "stdafx.h"
 #include "Material.h"
 
+map<string, GLuint> Material::m_Textures;
+const GLfloat Material::Material_White[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat Material::Material_White_Shininess[1] = { 0.0f };
+const GLfloat Material::Default_Ambient[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+const GLfloat Material::Default_Diffuse[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
+const GLfloat Material::Default_Specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+const GLfloat Material::Default_Shininess[1] = { 0.0f };
+const GLfloat Material::Default_Emission[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+Material* Material::lastMaterial = NULL;
+
 Material::Material()
 {
 	memset(this, 0, sizeof(Material));
@@ -13,6 +23,17 @@ void Material::SetMaterialWhite()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, Material_White);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, Material_White_Shininess);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, Material_White);
+	lastMaterial = NULL;
+}
+
+void Material::SetColorRGB(GLfloat r, GLfloat g, GLfloat b)
+{
+	GLfloat color[4] = { r, g, b, 1 };
+	glDisable(GL_TEXTURE_2D);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, Material_White_Shininess);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
 	lastMaterial = NULL;
 }
 
@@ -54,13 +75,3 @@ bool Material::IsTransparent()
 {
 	return (fabs(d - 1.000f) > 0.001f);
 }
-
-map<string, GLuint> Material::m_Textures;
-const GLfloat Material::Material_White[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat Material::Material_White_Shininess[1] = { 0.0f };
-const GLfloat Material::Default_Ambient[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
-const GLfloat Material::Default_Diffuse[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
-const GLfloat Material::Default_Specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-const GLfloat Material::Default_Shininess[1] = { 0.0f };
-const GLfloat Material::Default_Emission[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-Material* Material::lastMaterial = NULL;

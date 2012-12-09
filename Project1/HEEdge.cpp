@@ -109,7 +109,11 @@ void HEEdge::Delete(bool first, set<HEObject*>& deletedObjects)
 	{
 		eLeave->m_pair->m_pair = eArrive->m_pair;
 		eArrive->m_pair->m_pair = eLeave->m_pair;
+		if (vArrive->m_edge == eArrive)
+			vArrive->m_edge = eArrive->m_pair->m_next;
 		deletedObjects.insert(eLeave);
+		if (eLeave->m_vert->m_edge == eLeave)
+			eLeave->m_vert->m_edge = eArrive->m_pair;
 		deletedObjects.insert(eArrive);
 		deletedObjects.insert(m_face);
 	}
@@ -121,21 +125,18 @@ void HEEdge::Delete(bool first, set<HEObject*>& deletedObjects)
 			m_face->m_edge = eArrive;
 	}
 	if (vLeave->m_edge == this)
-			vLeave->m_edge = eArrive;
+		vLeave->m_edge = eLeave->m_pair;
 	if (first == true)
 	{
-		vector<HEEdge*> edges;
+		// move to center
+		vLeave->m_vert = (vLeave->m_vert + vArrive->m_vert) / 2;
 		HEVert::EdgeIterator iter =  vArrive->beginEdge();
 		do
 		{
-			edges.push_back(&(*iter));
+			// redirecting
+			iter->m_vert = m_vert;
 			++iter;
 		} while (iter != vArrive->endEdge());
-		// move to center
-		vLeave->m_vert = (vLeave->m_vert + vArrive->m_vert) / 2;
-		// redirecting
-		for (vector<HEEdge*>::size_type i = 0; i < edges.size(); ++i)
-			edges[i]->m_vert = m_vert;
 		m_pair->Delete(false, deletedObjects);
 	}
 	deletedObjects.insert(this);

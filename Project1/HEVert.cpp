@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "HEVert.h"
+#include "HEFace.h"
 
-HEVert::HEVert(GLfloat _x, GLfloat _y, GLfloat _z) : m_vert(_x, _y, _z), m_edge(NULL)
+HEVert::HEVert(GLdouble _x, GLdouble _y, GLdouble _z) : m_vert(_x, _y, _z), m_edge(NULL)
 {
 }
 
@@ -40,4 +41,20 @@ void HEVert::ToVerts(vector<HEVert*>& vector)
 
 void HEVert::Delete(set<HEObject*>& deletedObjects)
 {
+	EdgeIterator iter = beginEdge();
+	bool first = true;
+	do
+	{
+		iter->m_pair->prev()->m_next = iter->m_next;
+		deletedObjects.insert(&*iter);
+		deletedObjects.insert(iter->m_pair);
+		if (first == true)
+		{
+			first = false;
+			iter->m_face->m_edge = iter->m_next;
+		}
+		else
+			deletedObjects.insert(iter->m_face);
+		++iter;
+	} while (iter != endEdge());
 }

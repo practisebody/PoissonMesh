@@ -16,9 +16,11 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 	map<pair<int, int>, HEEdge*>::iterator mapIt;
 	_face->m_mtl = material;
 	sscanf(line, "%d%*c%d%*c%d%[^\n]", &vFrom, &pLastText, &pLastNorm, line);
+	int count = 1;
 	vFirst = vFrom;
 	while (sscanf(line, "%d%*c%d%*c%d%[^\n]", &vTo, &pText, &pNorm, line) != EOF)
 	{
+		++count;
 		tempEdge = new HEEdge();
 		_Vertices[vFrom]->m_edge = tempEdge;
 		tempEdge->m_vert = _Vertices[vFrom];

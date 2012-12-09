@@ -6,7 +6,7 @@
 World::World(int windowwidth, int windowheight, GLdouble eyex, GLdouble eyey, GLdouble eyez,
 	GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz)
 	: m_WindowWidth(windowwidth), m_WindowHeight(windowheight),	m_Eye(eyex, eyey, eyez),
-	m_Center(centerx, centery, centerz), m_Up(upx, upy, upz),
+	m_Center(centerx, centery, centerz), m_Up(upx, upy, upz), m_SelectSum(0.0, 0.0, 0.0),
 	lastx(m_WindowWidth / 2), lasty(m_WindowHeight / 2)
 {
 	m_Up.Normalize();
@@ -115,7 +115,7 @@ void World::Draw()
 	if (!m_objSelected.empty())
 		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
 			(*iter)->DrawSelected();
-
+	Utility::DrawTranslateAxis(m_SelectSum / m_vertSelected.size());
 	glPopMatrix();
 }
 
@@ -179,8 +179,6 @@ HEObject* World::GetNearestObject()
 	return NULL;
 }
 
-extern void OnDraw();
-
 void World::MouseClick(int modifiers)
 {
 	vector<HEVert*> verts;
@@ -189,6 +187,7 @@ void World::MouseClick(int modifiers)
 	// If Ctrl Not Down
 	if ((modifiers & GLUT_ACTIVE_CTRL) == 0)
 	{
+		new (&m_SelectSum) Point(0.0, 0.0, 0.0);
 		m_objSelected.clear();
 		m_vertSelected.clear();
 	}
@@ -204,7 +203,10 @@ void World::MouseClick(int modifiers)
 				m_objSelected.insert(obj);
 				obj->ToVerts(verts);
 				for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+				{
+					m_SelectSum += (*vertIter)->m_vert;
 					m_vertSelected.insert(*vertIter);
+				}
 			}
 			// if selected
 			else
@@ -214,51 +216,54 @@ void World::MouseClick(int modifiers)
 				{
 					(*iter)->ToVerts(verts);
 					for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+					{
+						m_SelectSum += (*vertIter)->m_vert;
 						m_vertSelected.insert(*vertIter);
+					}
 				}
 			}
 		}
 	}
 	// If Alt Down
-	else
-	{
-		m_objSelected.clear();
-		m_vertSelected.clear();
-		set<HEVert*> verts[3];
-		int last = 0, now = 1, next = 2;
-		HEVert* pVert = dynamic_cast<HEVert*>(obj);
-		if (pVert != NULL)
-		{
-			verts[now].insert(pVert);
-			m_objSelected.insert(pVert);
-			m_vertSelected.insert(pVert);
-		}
-		while (verts[now].empty() == false)
-		{
-			for (set<HEVert*>::iterator _iter = verts[now].begin(); _iter != verts[now].end(); ++_iter)
-			{
-				pVert = *_iter;
-				HEVert::VertIterator iter = pVert->beginVert();
-				do
-				{
-					if (verts[last].find(&(*iter)) == verts[last].end()
-						&& verts[now].find(&(*iter)) == verts[now].end())
-					{
-						verts[next].insert(&(*iter));
-						m_objSelected.insert(&(*iter));
-						m_vertSelected.insert(&(*iter));
-					}
-					++iter;
-				} while (iter != pVert->endVert());
-			}
-			printf("%d %d %d\n", verts[last].size(), verts[now].size(), verts[next].size());
-			OnDraw();
-			now = (now + 1) % 3;
-			last = (now + 2) % 3;
-			next = (now + 1) % 3;
-			verts[next].clear();
-		}
-	}
+	//else
+	//{
+	//	m_objSelected.clear();
+	//	m_vertSelected.clear();
+	//	set<HEVert*> verts[3];
+	//	int last = 0, now = 1, next = 2;
+	//	HEVert* pVert = dynamic_cast<HEVert*>(obj);
+	//	if (pVert != NULL)
+	//	{
+	//		verts[now].insert(pVert);
+	//		m_objSelected.insert(pVert);
+	//		m_vertSelected.insert(pVert);
+	//	}
+	//	while (verts[now].empty() == false)
+	//	{
+	//		for (set<HEVert*>::iterator _iter = verts[now].begin(); _iter != verts[now].end(); ++_iter)
+	//		{
+	//			pVert = *_iter;
+	//			HEVert::VertIterator iter = pVert->beginVert();
+	//			do
+	//			{
+	//				if (verts[last].find(&(*iter)) == verts[last].end()
+	//					&& verts[now].find(&(*iter)) == verts[now].end())
+	//				{
+	//					verts[next].insert(&(*iter));
+	//					m_objSelected.insert(&(*iter));
+	//					m_vertSelected.insert(&(*iter));
+	//				}
+	//				++iter;
+	//			} while (iter != pVert->endVert());
+	//		}
+	//		printf("%d %d %d\n", verts[last].size(), verts[now].size(), verts[next].size());
+	//		OnDraw();
+	//		now = (now + 1) % 3;
+	//		last = (now + 2) % 3;
+	//		next = (now + 1) % 3;
+	//		verts[next].clear();
+	//	}
+	//}
 }
 
 void World::OnKeyDown(unsigned char key, int x, int y)
@@ -288,27 +293,27 @@ void World::OnKeyDown(unsigned char key, int x, int y)
 		break;
 	case 'g' :
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(100 * Parameters::fMagnification, 0, 0);
+			*((HEVert*)(*iter)) += Vector(100 * Parameters::fMagnification, 0, 0);
 		break;
 	case 'h' :
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, 100 * Parameters::fMagnification, 0);
+			*((HEVert*)(*iter)) += Vector(0, 100 * Parameters::fMagnification, 0);
 		break;
 	case 'j' :
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, 0, 100 * Parameters::fMagnification);
+			*((HEVert*)(*iter)) += Vector(0, 0, 100 * Parameters::fMagnification);
 		break;
 	case 't' :
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(-100 * Parameters::fMagnification, 0, 0);
+			*((HEVert*)(*iter)) += Vector(-100 * Parameters::fMagnification, 0, 0);
 		break;
 	case 'y' :
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, -100 * Parameters::fMagnification, 0);
+			*((HEVert*)(*iter)) += Vector(0, -100 * Parameters::fMagnification, 0);
 		break;
 	case 'u' :
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((Object*)(*iter)) += Vector(0, 0, -100 * Parameters::fMagnification);
+			*((HEVert*)(*iter)) += Vector(0, 0, -100 * Parameters::fMagnification);
 		break;
 	case 'z':
 		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
@@ -316,6 +321,28 @@ void World::OnKeyDown(unsigned char key, int x, int y)
 		m_objSelected.clear();
 		m_vertSelected.clear();
 		DeleteObjects(deletedObjects);
+		break;
+	default:
+		break;
+	}
+}
+
+void World::OnMouseDrag(Vector dir)
+{
+	Point pCenter(m_SelectSum / m_vertSelected.size());
+	switch (status)
+	{
+	case World::TRANSLATE:
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((HEVert*)(*iter)) += dir;
+		break;
+	case World::SCALE:
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((HEVert*)(*iter)) += dir;
+		break;
+	case World::ROTATE:
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			*((HEVert*)(*iter)) += dir;
 		break;
 	default:
 		break;

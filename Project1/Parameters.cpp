@@ -10,6 +10,7 @@ GLfloat Parameters::fMagnification = 1.0f;
 bool Parameters::bLine = false;
 GLfloat& Parameters::fIntersectRadius = fMagnification;
 
-Parameters::Parameters()
+GLfloat Parameters::fRevisedMaginification()
 {
+	return log(fMagnification + 1) + 1;
 }

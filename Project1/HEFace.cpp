@@ -10,7 +10,7 @@ void HEFace::Draw()
 	{
 		if (m_mtl && m_mtl->IsTransparent() == false)
 			glTexCoord2f(iter->m_text->m_x, iter->m_text->m_y);
-		glVertex3f(iter->m_vert->m_vert.m_x, iter->m_vert->m_vert.m_y, iter->m_vert->m_vert.m_z);
+		glVertex3d(iter->m_vert->m_vert.m_x, iter->m_vert->m_vert.m_y, iter->m_vert->m_vert.m_z);
 		++iter;
 	} while (iter != endEdge());
 	glEnd();
@@ -22,7 +22,6 @@ void HEFace::DrawSelected()
 	do
 	{
 		iter->DrawSelected();
-		//iter->m_vert->DrawSelected();
 		++iter;
 	} while (iter != endEdge());
 }
@@ -69,6 +68,21 @@ void HEFace::ToVerts(vector<HEVert*>& vector)
 
 void HEFace::Delete(set<HEObject*>& deletedObjects)
 {
+	Point pCenter(0.0, 0.0, 0.0);
+	int count = 3;
+	while (m_edge->m_next->m_next->m_next != m_edge)
+	{
+		pCenter += m_edge->m_vert->m_vert;
+		++count;
+		m_edge->Delete(deletedObjects);
+	}
+	pCenter += m_edge->m_vert->m_vert;
+	pCenter += m_edge->m_next->m_vert->m_vert;
+	pCenter += m_edge->m_next->m_next->m_vert->m_vert;
+	m_edge->Delete(deletedObjects);
+	m_edge->m_next->m_pair->Delete(deletedObjects);
+	pCenter = pCenter / count;
+	m_edge->m_next->m_pair->m_vert->m_vert = pCenter;
 }
 
 bool HEFace::InPlane(const Point& point)

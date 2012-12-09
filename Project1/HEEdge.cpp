@@ -130,3 +130,14 @@ void HEEdge::Delete(bool first, set<HEObject*>& deletedObjects)
 	}
 	deletedObjects.insert(this);
 }
+
+void HEEdge::DeleteWithoutMove(set<HEObject*>& deletedObjects)
+{
+	prev()->m_next = m_pair->m_next;
+	m_pair->prev()->m_next = m_next;
+	if (m_face->m_edge == this)
+		m_face->m_edge = m_next;
+	deletedObjects.insert(this);
+	deletedObjects.insert(m_pair);
+	deletedObjects.insert(m_pair->m_face);
+}

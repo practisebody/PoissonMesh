@@ -35,11 +35,11 @@ const GLdouble Vector::operator[](const int index) const
 {
 	switch (index)
 	{
-	case 0 :
+	case 0:
 		return m_x;
-	case 1 :
+	case 1:
 		return m_y;
-	case 2 :
+	case 2:
 		return m_z;
 	default :
 		exit(0);
@@ -50,11 +50,11 @@ GLdouble& Vector::operator[](const int index)
 {
 	switch (index)
 	{
-	case 0 :
+	case 0:
 		return m_x;
-	case 1 :
+	case 1:
 		return m_y;
-	case 2 :
+	case 2:
 		return m_z;
 	default :
 		exit(0);

@@ -290,7 +290,7 @@ void World::OnMouseClick(int modifiers)
 	//}
 }
 
-void World::OnKeyDown(unsigned char key, int x, int y)
+void World::OnKeyDown(unsigned char key, int modifiers)
 {
 	Vector vForward = m_Center - m_Eye;
 	Vector vRight = vForward.OuterProduct(GetUp());
@@ -299,43 +299,50 @@ void World::OnKeyDown(unsigned char key, int x, int y)
 	{
 	case 27:
 		exit(0);
-	case 'w' :
+	case 'w':
 		m_Eye += 0.01 / vForward.Module() * vForward;
 		m_Center += 0.01 / vForward.Module() * vForward;
 		break;
-	case 's' :
+	case 's':
 		m_Eye -= 0.01 / vForward.Module() * vForward;
 		m_Center -= 0.01 / vForward.Module() * vForward;
 		break;
-	case 'a' :
+	case 'a':
 		m_Eye -= 0.01 / vRight.Module() * vRight;
 		m_Center -= 0.01 / vRight.Module() * vRight;
 		break;
-	case 'd' :
+	case 'd':
 		m_Eye += 0.01 / vRight.Module() * vRight;
 		m_Center += 0.01 / vRight.Module() * vRight;
 		break;
-	case 'g' :
+	case 'g':
 		OnMouseDrag(Parameters::fRevisedMaginification(),0);
 		break;
-	case 'h' :
+	case 'h':
 		OnMouseDrag(Parameters::fRevisedMaginification(), 1);
 		break;
-	case 'j' :
+	case 'j':
 		OnMouseDrag(Parameters::fRevisedMaginification(), 2);
 		break;
-	case 't' :
+	case 't':
 		OnMouseDrag(- Parameters::fRevisedMaginification(), 0);
 		break;
-	case 'y' :
+	case 'y':
 		OnMouseDrag(- Parameters::fRevisedMaginification(), 1);
 		break;
-	case 'u' :
+	case 'u':
 		OnMouseDrag(- Parameters::fRevisedMaginification(), 2);
 		break;
-	case 'z':
+	case 127:
 		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
-			(*iter)->Delete(deletedObjects);
+			if ((modifiers & GLUT_ACTIVE_ALT) == 0)
+				(*iter)->Delete(deletedObjects);
+			else
+			{
+				HEEdge* edge;
+				if ((edge = dynamic_cast<HEEdge*>(*iter)) != NULL)
+					edge->DeleteWithoutMove(deletedObjects);
+			}
 		m_objSelected.clear();
 		m_vertSelected.clear();
 		DeleteObjects(deletedObjects);

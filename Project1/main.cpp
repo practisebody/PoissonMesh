@@ -84,10 +84,10 @@ void Init(int argc, char** argv)
 
 void OnKeyDown(unsigned char key, int x, int y)
 {
-	theWorld.OnKeyDown(key, x, y);
+	theWorld.OnKeyDown(key, glutGetModifiers());
 	glutPostRedisplay();
 }
-
+ 
 void OnSpecialKeyDown(int key, int x, int y)
 {
 	switch (key)
@@ -95,12 +95,13 @@ void OnSpecialKeyDown(int key, int x, int y)
 	case GLUT_KEY_F3:
 		Parameters::bLine = !Parameters::bLine;
 		break;
-	case GLUT_KEY_UP :
+	case GLUT_KEY_UP:
 		Parameters::fMagnification *= 1.1;
 		break;
-	case GLUT_KEY_DOWN :
+	case GLUT_KEY_DOWN:
 		Parameters::fMagnification *= 0.9;
 		break;
+	case GLUT_KEY_INSERT:
 	default:
 		break;
 	}
@@ -111,9 +112,9 @@ void OnMouseClick(int button, int state, int x, int y)
 {
 	switch (state)
 	{
-	case GLUT_DOWN :
+	case GLUT_DOWN:
 		theWorld.OnMouseClick(glutGetModifiers());
-	case GLUT_UP :
+	case GLUT_UP:
 		//theWorld.m_objSelected = NULL;
 		break;
 	}

@@ -18,7 +18,7 @@ public:
 	void Draw();
 	void RecalculateSum();
 	void OnMouseClick(int modifiers);
-	void OnKeyDown(unsigned char key, int x, int y);
+	void OnKeyDown(unsigned char key, int modifiers);
 	void OnMouseDrag(GLdouble scale, int dir);
 public:
 	const int m_WindowWidth;

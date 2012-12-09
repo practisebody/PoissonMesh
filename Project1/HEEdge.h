@@ -29,6 +29,7 @@ struct HEEdge : public HEObject
 	HEEdge* left();
 	virtual void Delete(set<HEObject*>& deletedObjects);
 	void Delete(bool first, set<HEObject*>& deletedObjects);
+	void DeleteWithoutMove(set<HEObject*>& deletedObjects);
 };
 
 #include "HEEdgeIterators.h"

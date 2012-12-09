@@ -24,7 +24,6 @@ struct HEEdge : public HEObject
 	HEEdge();
 	virtual void DrawSelected();
 	virtual double Intersect(const Point& point, const Vector& dir);
-	virtual void operator+=(Vector vector);
 	virtual void ToVerts(vector<HEVert*>& vector);
 	HEEdge* prev();
 	HEEdge* left();

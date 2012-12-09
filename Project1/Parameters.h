@@ -8,6 +8,12 @@
 class Parameters
 {
 public:
+	enum states
+	{
+		TRANSLATE,
+		SCALE,
+		ROTATE,
+	};
 	static const GLdouble PI;
 	static const int MAX_LINE_LENGTH;
 	static const int MAX_PREFIX_LENGTH;
@@ -17,4 +23,5 @@ public:
 	static bool bLine;
 	static GLfloat& fIntersectRadius;
 	static GLfloat fRevisedMaginification();
+	static states status;
 };

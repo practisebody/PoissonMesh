@@ -19,7 +19,8 @@ public:
 	const Vector operator-(const Vector& that) const;
 	const Vector operator-=(const Vector& that);
 	const GLdouble operator*(const Vector& that) const;
-	const Vector OuterProduct(const Vector& that);
+	const Vector VectorProduct(const Vector& that) const;
+	const Vector OuterProduct(const Vector& that) const;
 	friend const Vector operator*(const GLdouble lamda, const Vector& a);
 	const Vector operator/(const GLdouble lamda) const;
 	friend const GLdouble WeightedInnerProduct(const Vector& I, const Vector& that, const Vector& weight);

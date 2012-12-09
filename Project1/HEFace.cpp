@@ -44,16 +44,6 @@ double HEFace::Intersect(const Point& D, const Vector& E)
 	return -1.0;
 }
 
-void HEFace::operator+=(Vector vector)
-{
-	EdgeIterator iter = beginEdge();
-	do
-	{
-		*iter->m_vert += vector;
-		++iter;
-	} while (iter != endEdge());
-}
-
 void HEFace::ToVerts(vector<HEVert*>& vector)
 {
 	vector.clear();

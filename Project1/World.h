@@ -10,21 +10,16 @@ public:
 	World(int windowwidth, int windowheight, GLdouble eyex, GLdouble eyey, GLdouble eyez,
 		GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz);
 	~World();
-	enum states
-	{
-		TRANSLATE,
-		SCALE,
-		ROTATE,
-	};
 	void Init(const char* name);
 	Vector GetUp();
 	void SetUp(const Vector& up);
 	void AddFace(HEFace* const face);
 	void Orient();
 	void Draw();
-	void MouseClick(int modifiers);
+	void RecalculateSum();
+	void OnMouseClick(int modifiers);
 	void OnKeyDown(unsigned char key, int x, int y);
-	void OnMouseDrag(Vector dir);
+	void OnMouseDrag(GLdouble scale, int dir);
 public:
 	const int m_WindowWidth;
 	const int m_WindowHeight;
@@ -43,5 +38,4 @@ private:
 	vector<Vector*> m_NormVectors;
 	vector<Point*> m_TextPoints;  // read from obj, start from 1
 	vector<GLuint> m_Textures;
-	enum states status;
 };

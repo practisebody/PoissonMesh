@@ -115,7 +115,20 @@ void World::Draw()
 	if (!m_objSelected.empty())
 		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
 			(*iter)->DrawSelected();
-	Utility::DrawTranslateAxis(m_SelectSum / m_vertSelected.size());
+	switch (Parameters::status)
+	{
+	case Parameters::TRANSLATE:
+		Utility::DrawTranslateAxis(m_SelectSum / m_vertSelected.size());
+		break;
+	case Parameters::SCALE:
+		Utility::DrawScaleAxis(m_SelectSum / m_vertSelected.size());
+		break;
+	case Parameters::ROTATE:
+		Utility::DrawRotateAxis(m_SelectSum / m_vertSelected.size());
+		break;
+	default:
+		break;
+	}
 	glPopMatrix();
 }
 
@@ -179,7 +192,16 @@ HEObject* World::GetNearestObject()
 	return NULL;
 }
 
-void World::MouseClick(int modifiers)
+void World::RecalculateSum()
+{
+	new (&m_SelectSum) Point(0.0, 0.0, 0.0);
+	for (set<HEVert*>::iterator vertIter = m_vertSelected.begin(); vertIter != m_vertSelected.end(); ++vertIter)
+	{
+		m_SelectSum += (*vertIter)->m_vert;
+	}
+}
+
+void World::OnMouseClick(int modifiers)
 {
 	vector<HEVert*> verts;
 	vector<HEVert*>::iterator vertIter;
@@ -212,6 +234,8 @@ void World::MouseClick(int modifiers)
 			else
 			{
 				m_objSelected.erase(iter);
+				m_vertSelected.clear();
+				new (&m_SelectSum) Point(0.0, 0.0, 0.0);
 				for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
 				{
 					(*iter)->ToVerts(verts);
@@ -292,28 +316,22 @@ void World::OnKeyDown(unsigned char key, int x, int y)
 		m_Center += 0.01 / vRight.Module() * vRight;
 		break;
 	case 'g' :
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += Vector(100 * Parameters::fMagnification, 0, 0);
+		OnMouseDrag(Parameters::fRevisedMaginification(),0);
 		break;
 	case 'h' :
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += Vector(0, 100 * Parameters::fMagnification, 0);
+		OnMouseDrag(Parameters::fRevisedMaginification(), 1);
 		break;
 	case 'j' :
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += Vector(0, 0, 100 * Parameters::fMagnification);
+		OnMouseDrag(Parameters::fRevisedMaginification(), 2);
 		break;
 	case 't' :
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += Vector(-100 * Parameters::fMagnification, 0, 0);
+		OnMouseDrag(- Parameters::fRevisedMaginification(), 0);
 		break;
 	case 'y' :
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += Vector(0, -100 * Parameters::fMagnification, 0);
+		OnMouseDrag(- Parameters::fRevisedMaginification(), 1);
 		break;
 	case 'u' :
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += Vector(0, 0, -100 * Parameters::fMagnification);
+		OnMouseDrag(- Parameters::fRevisedMaginification(), 2);
 		break;
 	case 'z':
 		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
@@ -322,31 +340,68 @@ void World::OnKeyDown(unsigned char key, int x, int y)
 		m_vertSelected.clear();
 		DeleteObjects(deletedObjects);
 		break;
+	case 'x':
+		Parameters::status = (Parameters::states)((Parameters::status + 1) % 3);
 	default:
 		break;
 	}
+	RecalculateSum();
 }
 
-void World::OnMouseDrag(Vector dir)
+void World::OnMouseDrag(GLdouble scale, int dir)
 {
+	GLdouble angle = scale / 10 * 2 * Parameters::PI;
 	Point pCenter(m_SelectSum / m_vertSelected.size());
-	switch (status)
+	Vector bases[3] =
 	{
-	case World::TRANSLATE:
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += dir;
+		Vector(1.0, 0.0, 0.0),
+		Vector(0.0, 1.0, 0.0),
+		Vector(0.0, 0.0, 1.0),
+	};
+	GLdouble Rotation[4][4] =
+	{
+		{ 1.0, 0.0, 0.0, 0.0 },
+		{ 0.0, 1.0, 0.0, 0.0 },
+		{ 0.0, 0.0, 1.0, 0.0 },
+	};
+	switch (dir)
+	{
+	case 0:
+		Rotation[1][1] = cos(angle); Rotation[1][2] = - sin(angle);
+		Rotation[2][1] = sin(angle); Rotation[2][2] = cos(angle);
 		break;
-	case World::SCALE:
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += dir;
+	case 1:
+		Rotation[0][0] = cos(angle); Rotation[0][2] = - sin(angle);
+		Rotation[2][0] = sin(angle); Rotation[2][2] = cos(angle);
 		break;
-	case World::ROTATE:
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			*((HEVert*)(*iter)) += dir;
+	case 2:
+		Rotation[0][0] = cos(angle); Rotation[0][1] = - sin(angle);
+		Rotation[1][0] = sin(angle); Rotation[1][1] = cos(angle);
 		break;
 	default:
+		assert(false);
 		break;
 	}
+	assert(dir >=0 && dir <= 2);
+	switch (Parameters::status)
+	{
+	case Parameters::TRANSLATE:
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			**iter += scale * bases[dir];
+		break;
+	case Parameters::SCALE:
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			**iter = ((*iter)->m_vert - pCenter).VectorProduct((exp(scale) - 1) * bases[dir] + Vector(1.0, 1.0, 1.0)) + pCenter;
+		break;
+	case Parameters::ROTATE:
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			**iter = Transform(Rotation, (*iter)->m_vert - pCenter) + pCenter;
+		break;
+	default:
+		assert(false);
+		break;
+	}
+	RecalculateSum();
 }
 
 void World::DeleteObjects(set<HEObject*>& deletedObjects)

@@ -9,6 +9,7 @@ const GLdouble Parameters::zFar = 1000;
 GLfloat Parameters::fMagnification = 1.0f;
 bool Parameters::bLine = false;
 GLfloat& Parameters::fIntersectRadius = fMagnification;
+Parameters::states Parameters::status = TRANSLATE;
 
 GLfloat Parameters::fRevisedMaginification()
 {

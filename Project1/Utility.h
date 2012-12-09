@@ -10,8 +10,9 @@
 class Utility
 {
 public:
+	static void DrawBasicAxis(Point point);
+	static void DrawCircle(GLdouble R, int n);
 	static void DrawTranslateAxis(Point point);
 	static void DrawScaleAxis(Point point);
 	static void DrawRotateAxis(Point point);
-	static void DrawCircle(GLdouble R, int n);
 };

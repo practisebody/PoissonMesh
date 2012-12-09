@@ -91,7 +91,12 @@ const GLdouble Vector::operator*(const Vector& that) const
 	return this->m_x * that.m_x + this->m_y * that.m_y + this->m_z * that.m_z;
 }
 
-const Vector Vector::OuterProduct(const Vector& that)
+const Vector Vector::VectorProduct(const Vector& that) const
+{
+	return Vector(this->m_x * that.m_x, this->m_y * that.m_y, this->m_z * that.m_z);
+}
+
+const Vector Vector::OuterProduct(const Vector& that) const
 {
 	return Vector(this->m_y * that.m_z - that.m_y * this->m_z, this->m_z * that.m_x - that.m_z * this->m_x,
 		this->m_x * that.m_y - that.m_x * this->m_y);

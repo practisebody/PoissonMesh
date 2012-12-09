@@ -28,11 +28,6 @@ double HEVert::Intersect(const Point& point, const Vector& dir)
 		return -2 * c / (b + sqrt(delta));
 }
 
-void HEVert::operator+=(Vector vector)
-{
-	m_vert += vector;
-}
-
 void HEVert::ToVerts(vector<HEVert*>& vector)
 {
 	vector.clear();
@@ -57,4 +52,14 @@ void HEVert::Delete(set<HEObject*>& deletedObjects)
 			deletedObjects.insert(iter->m_face);
 		++iter;
 	} while (iter != endEdge());
+}
+
+void HEVert::operator+=(Vector vector)
+{
+	m_vert += vector;
+}
+
+void HEVert::operator=(Point point)
+{
+	m_vert = point;
 }

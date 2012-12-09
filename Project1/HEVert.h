@@ -20,9 +20,10 @@ struct HEVert : public HEObject
 	HEVert(GLdouble _x, GLdouble _y, GLdouble _z);
 	virtual void DrawSelected();
 	virtual double Intersect(const Point& poing, const Vector& dir);
-	virtual void operator+=(Vector vector);
 	virtual void ToVerts(vector<HEVert*>& vector);
 	virtual void Delete(set<HEObject*>& deletedObjects);
+	void operator+=(Vector vector);
+	void operator=(Point point);
 };
 
 #include "HEVertIterators.h"

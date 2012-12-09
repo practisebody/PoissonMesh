@@ -56,17 +56,6 @@ double HEEdge::Intersect(const Point& point1, const Vector& dir1)
 		return -1.0;
 }
 
-void HEEdge::operator+=(Vector vector)
-{
-	VertIterator iter = beginVert();
-	do
-	{
-		*iter += vector;
-		++iter;
-	}
-	while (iter != endVert());
-}
-
 void HEEdge::ToVerts(vector<HEVert*>& vector)
 {
 	vector.clear();

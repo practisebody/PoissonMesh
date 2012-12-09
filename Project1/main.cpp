@@ -107,12 +107,12 @@ void OnSpecialKeyDown(int key, int x, int y)
 	glutPostRedisplay();
 }
 
-void OnMouseDown(int button, int state, int x, int y)
+void OnMouseClick(int button, int state, int x, int y)
 {
 	switch (state)
 	{
 	case GLUT_DOWN :
-		theWorld.MouseClick(glutGetModifiers());
+		theWorld.OnMouseClick(glutGetModifiers());
 	case GLUT_UP :
 		//theWorld.m_objSelected = NULL;
 		break;
@@ -163,19 +163,20 @@ void OnMouseMove(int x, int y)
 		{ v.m_x, v.m_y, v.m_z, -(v * theWorld.m_Eye) },
 		{ n.m_x, n.m_y, n.m_z, -(n * theWorld.m_Eye) },
 	};
-	GLdouble HorizontalRotation[3][4] =
+	GLdouble HorizontalRotation[4][4] =
 	{
 		{ cos(HorizontalAngle), -sin(HorizontalAngle), 0, 0 },
 		{ sin(HorizontalAngle), cos(HorizontalAngle), 0, 0 },
 		{ 0, 0, 1, 0 },
 	};
-	GLdouble VerticalRotation[3][4] =
+	GLdouble VerticalRotation[4][4] =
 	{
 		{ 1, 0, 0, 0 },
 		{ 0, cos(VerticalAngle), -sin(VerticalAngle), 0 },
 		{ 0, sin(VerticalAngle), cos(VerticalAngle), 0 },
 	};
-	GLdouble ViewtoWorld[3][4] = {
+	GLdouble ViewtoWorld[4][4] =
+	{
 		{ u.m_x, v.m_x, n.m_x, theWorld.m_Eye.m_x },
 		{ u.m_y, v.m_y, n.m_y, theWorld.m_Eye.m_y },
 		{ u.m_z, v.m_z, n.m_z, theWorld.m_Eye.m_z },
@@ -216,11 +217,11 @@ void OnMouseDrag(int x, int y)
 		GLdouble yscale = (yu * cursoru + yn * cursorn) / sqrt(yu * yu + yn * yn);
 		GLdouble zscale = (zu * cursoru + zn * cursorn) / sqrt(zu * zu + zn * zn);
 		if (fabs(xscale) > fabs(yscale) && fabs(xscale) > fabs(zscale))
-			theWorld.OnMouseDrag(Vector(xscale, 0.0, 0.0));
+			theWorld.OnMouseDrag(xscale, 0);
 		if (fabs(yscale) > fabs(xscale) && fabs(yscale) > fabs(zscale))
-			theWorld.OnMouseDrag(Vector(0.0, yscale, 0.0));
+			theWorld.OnMouseDrag(yscale, 1);
 		if (fabs(zscale) > fabs(xscale) && fabs(zscale) > fabs(yscale))
-			theWorld.OnMouseDrag(Vector(0.0, 0.0, zscale));
+			theWorld.OnMouseDrag(zscale, 2);
 	}
 	OnMouseMove(x, y);
 }
@@ -253,7 +254,7 @@ void main(int argc, char** argv)
 	Init(argc, argv);
 	glutKeyboardFunc(OnKeyDown);
 	glutSpecialFunc(OnSpecialKeyDown);
-	glutMouseFunc(OnMouseDown);
+	glutMouseFunc(OnMouseClick);
 	glutMotionFunc(OnMouseDrag);
 	glutPassiveMotionFunc(OnMouseMove);
 	glutDisplayFunc(OnDraw);

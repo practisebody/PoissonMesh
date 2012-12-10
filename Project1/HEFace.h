@@ -21,6 +21,8 @@ struct HEFace : public HEObject
 	virtual void DrawSelected();
 	virtual double Intersect(const Point& D, const Vector& E);
 	virtual void ToVerts(vector<HEVert*>& vector);
+	virtual HEVert* InsertVertex(vector<HEFace*>& faces);
+	virtual void InsertVertices(vector<HEVert*>& verts, vector<HEFace*>& faces);
 	virtual void Delete(set<HEObject*>& deletedObjects);
 	bool InPlane(const Point& point);
 };

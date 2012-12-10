@@ -38,9 +38,26 @@ void World::SetUp(const Vector& up)
 	m_Up = up.Normalize();
 }
 
+void World::AddVert(HEVert* const vert)
+{
+	m_Vertices.push_back(vert);
+}
+
+void World::AppendVerts(vector<HEVert*>& verts)
+{
+	for (vector<HEVert*>::size_type nIndex = 0; nIndex < verts.size(); ++nIndex)
+		AddVert(verts[nIndex]);
+}
+
 void World::AddFace(HEFace* const face)
 {
 	m_Faces.push_back(face);
+}
+
+void World::AppendFaces(vector<HEFace*>& faces)
+{
+	for (vector<HEFace*>::size_type nIndex = 0; nIndex < faces.size(); ++nIndex)
+		AddFace(faces[nIndex]);
 }
 
 void World::Orient()
@@ -290,6 +307,61 @@ void World::OnMouseClick(int modifiers)
 	//}
 }
 
+void World::OnSpecialKeyDown(int key, int modifiers)
+{
+	HEVert* tempVert;
+	vector<HEVert*> verts;
+	vector<HEFace*> faces;
+	switch (key)
+	{
+	case GLUT_KEY_F3:
+		Parameters::bLine = !Parameters::bLine;
+		break;
+	case GLUT_KEY_UP:
+		Parameters::fMagnification *= 1.1;
+		break;
+	case GLUT_KEY_DOWN:
+		Parameters::fMagnification *= 0.9;
+		break;
+	case GLUT_KEY_INSERT:
+		m_vertSelected.clear();
+		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+		{
+			// alt not down
+			if ((modifiers & GLUT_ACTIVE_ALT) == 0)
+			{
+				tempVert = (*iter)->InsertVertex(faces);
+				if (tempVert != NULL)
+				{
+					m_vertSelected.insert(tempVert);
+					AddVert(tempVert);
+				}
+				if (faces.size() != 0)
+					AppendFaces(faces);
+			}
+			// alt down
+			else
+			{
+				HEFace* face;
+				if ((face = dynamic_cast<HEFace*>(*iter)) != NULL)
+					face->InsertVertices(verts, faces);
+				for(vector<HEVert*>::size_type nIndex = 0; nIndex < verts.size(); ++nIndex)
+					m_vertSelected.insert(verts[nIndex]);
+				AppendVerts(verts);
+				if (faces.size() != 0)
+					AppendFaces(faces);
+			}
+		}
+		m_objSelected.clear();
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+			m_objSelected.insert(*iter);
+		RecalculateSum();
+		break;
+	default:
+		break;
+	}
+}
+
 void World::OnKeyDown(unsigned char key, int modifiers)
 {
 	Vector vForward = m_Center - m_Eye;
@@ -334,14 +406,25 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		OnMouseDrag(- Parameters::fRevisedMaginification(), 2);
 		break;
 	case 127:
-		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+		// if select one object
+		if (m_objSelected.size() == 1)
 			if ((modifiers & GLUT_ACTIVE_ALT) == 0)
-				(*iter)->Delete(deletedObjects);
+				(*m_objSelected.begin())->Delete(deletedObjects);
 			else
 			{
 				HEEdge* edge;
-				if ((edge = dynamic_cast<HEEdge*>(*iter)) != NULL)
+				if ((edge = dynamic_cast<HEEdge*>(*m_objSelected.begin())) != NULL)
 					edge->DeleteWithoutMove(deletedObjects);
+			}
+		// if multipule objects selected, only deal with faces
+		else
+			for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+			{
+				HEFace* face;
+				if ((face = dynamic_cast<HEFace*>(*iter)) != NULL)
+				{
+					face->Delete(deletedObjects);
+				}
 			}
 		m_objSelected.clear();
 		m_vertSelected.clear();
@@ -413,9 +496,9 @@ void World::OnMouseDrag(GLdouble scale, int dir)
 
 void World::DeleteObjects(set<HEObject*>& deletedObjects)
 {
+	HEFace* pFace;
 	for (set<HEObject*>::iterator iter = deletedObjects.begin(); iter != deletedObjects.end(); ++iter)
 	{
-		HEFace* pFace;
 		if ((pFace = dynamic_cast<HEFace*>(*iter)) != NULL)
 			m_Faces.erase(find(m_Faces.begin(), m_Faces.end(), pFace));
 		delete *iter;

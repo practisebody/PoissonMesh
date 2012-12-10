@@ -6,6 +6,11 @@ HEVert::HEVert(GLdouble _x, GLdouble _y, GLdouble _z) : m_vert(_x, _y, _z), m_ed
 {
 }
 
+HEVert::HEVert(Vector vector) : m_vert(vector.m_x,vector.m_y, vector.m_z), m_edge(NULL)
+{
+	//m_vert = m_vert / Parameters::fMagnification;
+}
+
 void HEVert::DrawSelected()
 {
 	glLineWidth(5.0f);
@@ -34,6 +39,11 @@ void HEVert::ToVerts(vector<HEVert*>& vector)
 	vector.push_back(this);
 }
 
+HEVert* HEVert::InsertVertex(vector<HEFace*>& /*faces*/)
+{
+	return NULL;
+}
+
 void HEVert::Delete(set<HEObject*>& deletedObjects)
 {
 	EdgeIterator iter = beginEdge();
@@ -41,6 +51,8 @@ void HEVert::Delete(set<HEObject*>& deletedObjects)
 	do
 	{
 		iter->m_pair->prev()->m_next = iter->m_next;
+		if (iter->m_next->m_vert->m_edge == iter->m_pair)
+			iter->m_next->m_vert->m_edge = iter->m_next;
 		deletedObjects.insert(&*iter);
 		deletedObjects.insert(iter->m_pair);
 		if (first == true)

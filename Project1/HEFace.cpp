@@ -56,6 +56,78 @@ void HEFace::ToVerts(vector<HEVert*>& vector)
 	while (iter != endVert()); 
 }
 
+HEVert* HEFace::InsertVertex(vector<HEFace*>& faces)
+{
+	bool first = true;
+	Point pCenter(0.0, 0.0, 0.0);
+	Vector* vNorm = new Vector(0.0, 0.0, 0.0);
+	Point* vText = new Point(0.0, 0.0, 0.0);
+	int nCount = 0;
+	HEFace* pFace = this;
+	// edges around this face
+	vector<HEEdge*> edges;
+	EdgeIterator iter = beginEdge();
+	do
+	{
+		pCenter += iter->m_vert->m_vert;
+		*vNorm += *iter->m_norm;
+		*vText += *iter->m_text;
+		edges.push_back(&*iter);
+		++nCount;
+		++iter;
+	}
+	while (iter != endEdge());
+	*vNorm = *vNorm / nCount;
+	*vText = *vText / nCount;
+
+	// new materials
+	HEVert* vCenter = new HEVert(pCenter / nCount);
+	// edges that leaving center
+	HEEdge** leaveEdges = new HEEdge*[nCount];
+	// edges that arriving center
+	HEEdge** arriveEdges = new HEEdge*[nCount];
+	for (int i = 0; i < nCount; ++i)
+	{
+		leaveEdges[i] = new HEEdge();
+		arriveEdges[i] = new HEEdge();
+	}
+	for (int i = 0; i < nCount - 1; ++i)
+		faces.push_back(new HEFace);
+	faces.push_back(this);
+
+	// link materails
+	vCenter->m_edge = leaveEdges[0];
+	for (int i = 0; i < nCount; ++i)
+	{
+		int nNext = (i + 1) % nCount;
+		int nPrev = (i + nCount - 1) % nCount;
+		leaveEdges[i]->m_vert = vCenter;
+		leaveEdges[i]->m_pair = arriveEdges[i];
+		leaveEdges[i]->m_face = faces[nNext];
+		leaveEdges[i]->m_next = edges[nNext];
+		leaveEdges[i]->m_text = vText;
+		leaveEdges[i]->m_norm = vNorm;
+		arriveEdges[i]->m_vert = edges[nNext]->m_vert;
+		arriveEdges[i]->m_pair = leaveEdges[i];
+		arriveEdges[i]->m_face = faces[i];
+		arriveEdges[i]->m_next = leaveEdges[nPrev];
+		arriveEdges[i]->m_text = edges[nNext]->m_text;
+		arriveEdges[i]->m_norm = edges[nNext]->m_norm;
+		edges[i]->m_face = faces[i];
+		edges[i]->m_next = arriveEdges[i];
+		faces[i]->m_edge = edges[i];
+		faces[i]->m_mtl = m_mtl;
+	}
+	faces.pop_back();
+	return vCenter;
+}
+
+void HEFace::InsertVertices(vector<HEVert*>& verts, vector<HEFace*>& faces)
+{
+	verts.clear();
+	faces.clear();
+}
+
 void HEFace::Delete(set<HEObject*>& deletedObjects)
 {
 	Point pCenter(0.0, 0.0, 0.0);

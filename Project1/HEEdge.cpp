@@ -81,6 +81,37 @@ HEEdge* HEEdge::left()
 	return prev()->m_pair;
 }
 
+HEVert* HEEdge::InsertVertex(vector<HEFace*>& /*faces*/)
+{
+	HEVert* vRet = new HEVert((m_vert->m_vert + m_next->m_vert->m_vert) / 2);
+	// new edges
+	HEEdge* eLeave = new HEEdge();
+	HEEdge* eArrive = new HEEdge();
+	eLeave->m_vert = vRet;
+	eLeave->m_pair = eArrive;
+	eLeave->m_face = m_face;
+	eLeave->m_next = m_next;
+	eLeave->m_text = new Point((*m_text + *(m_next->m_text)) / 2);
+	eLeave->m_norm = new Vector((*m_norm + *(m_next->m_norm)) / 2);
+	eArrive->m_vert = m_next->m_vert;
+	eArrive->m_pair = eLeave;
+	eArrive->m_face = m_pair->m_face;
+	eArrive->m_next = m_pair;
+	eArrive->m_text = m_pair->m_text;
+	eArrive->m_norm = m_pair->m_norm;
+	// fix original edges
+	m_pair->m_vert = vRet;
+	m_pair->prev()->m_next = eArrive;
+	m_pair->m_text = new Point((*(m_pair->m_text) + *(m_pair->m_next->m_text)) / 2);
+	m_pair->m_norm = new Point((*(m_pair->m_norm) + *(m_pair->m_next->m_norm)) / 2);
+	m_next = eLeave;
+	// fix vertices
+	if (m_next->m_vert->m_edge == m_pair)
+		m_next->m_vert->m_edge = eArrive;
+	vRet->m_edge = eLeave;
+	return vRet;
+}
+
 void HEEdge::Delete(set<HEObject*>& deletedObjects)
 {
 	Delete(true, deletedObjects);
@@ -135,6 +166,16 @@ void HEEdge::DeleteWithoutMove(set<HEObject*>& deletedObjects)
 {
 	prev()->m_next = m_pair->m_next;
 	m_pair->prev()->m_next = m_next;
+	HEFace::EdgeIterator iter = m_pair->m_face->beginEdge();
+	do
+	{
+		iter->m_face = m_face;
+		++iter;
+	} while (iter != m_pair->m_face->endEdge());
+	if (m_vert->m_edge == this)
+		m_vert->m_edge = m_pair->m_next;
+	if (m_pair->m_vert->m_edge == m_pair)
+		m_pair->m_vert->m_edge = m_next;
 	if (m_face->m_edge == this)
 		m_face->m_edge = m_next;
 	deletedObjects.insert(this);

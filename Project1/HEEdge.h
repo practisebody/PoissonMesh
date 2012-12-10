@@ -22,11 +22,12 @@ struct HEEdge : public HEObject
 	Point* m_text;		// the texture point of above vertex
 	Vector* m_norm;		// normal vector of above vertex
 	HEEdge();
+	HEEdge* prev();
+	HEEdge* left();
 	virtual void DrawSelected();
 	virtual double Intersect(const Point& point, const Vector& dir);
 	virtual void ToVerts(vector<HEVert*>& vector);
-	HEEdge* prev();
-	HEEdge* left();
+	virtual HEVert* InsertVertex(vector<HEFace*>& faces);
 	virtual void Delete(set<HEObject*>& deletedObjects);
 	void Delete(bool first, set<HEObject*>& deletedObjects);
 	void DeleteWithoutMove(set<HEObject*>& deletedObjects);

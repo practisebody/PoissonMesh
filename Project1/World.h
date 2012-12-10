@@ -13,11 +13,15 @@ public:
 	void Init(const char* name);
 	Vector GetUp();
 	void SetUp(const Vector& up);
+	void AddVert(HEVert* const vert);
+	void AppendVerts(vector<HEVert*>& verts);
 	void AddFace(HEFace* const face);
+	void AppendFaces(vector<HEFace*>& faces);
 	void Orient();
 	void Draw();
 	void RecalculateSum();
 	void OnMouseClick(int modifiers);
+	void OnSpecialKeyDown(int key, int modifiers);
 	void OnKeyDown(unsigned char key, int modifiers);
 	void OnMouseDrag(GLdouble scale, int dir);
 public:

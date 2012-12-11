@@ -2,17 +2,42 @@
 
 #include "stdafx.h"
 
+#include "Direction.h"
+#include "States.h"
 #include "Parameters.h"
 #include "Material.h"
+#include "LineWidth.h"
 #include "Vector.h"
 #include "HalfEdgeDeclaration.h"
 
 class Utility
 {
 public:
-	static void DrawBasicAxis(Point point);
+	static void DrawBasicAxis(const Point& here);
 	static void DrawCircle(GLdouble R, int n);
-	static void DrawTranslateAxis(Point point);
-	static void DrawScaleAxis(Point point);
-	static void DrawRotateAxis(Point point);
+	static void DrawTranslateAxis(const Point& here);
+	static void DrawScaleAxis(const Point& here);
+	static void DrawRotateAxis(const Point& here);
+	static void DrawCube(const Point& leftdown, const Vector& scale);
+	template<typename T>
+	static void SetMin(T& a, const T& b);
+	template<typename T>
+	static void SetMax(T& a, const T& b);
+	static const Point minPoint, maxPoint;
+	static void SetMin(Point& a, const Point& b);
+	static void SetMax(Point& a, const Point& b);
 };
+
+template<typename T>
+void Utility::SetMin(T& a, const T& b)
+{
+	if (a > b)
+		a = b;
+}
+
+template<typename T>
+void Utility::SetMax(T& a, const T& b)
+{
+	if (a < b)
+		a = b;
+}

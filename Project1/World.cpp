@@ -6,7 +6,7 @@
 World::World(int windowwidth, int windowheight, GLdouble eyex, GLdouble eyey, GLdouble eyez,
 	GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz)
 	: m_WindowWidth(windowwidth), m_WindowHeight(windowheight),	m_Eye(eyex, eyey, eyez),
-	m_Center(centerx, centery, centerz), m_Up(upx, upy, upz), m_SelectSum(0.0, 0.0, 0.0),
+	m_Center(centerx, centery, centerz), m_Up(upx, upy, upz), m_DragDir(DIR_NULL), 
 	lastx(m_WindowWidth / 2), lasty(m_WindowHeight / 2)
 {
 	m_Up.Normalize();
@@ -60,7 +60,7 @@ void World::AppendFaces(vector<HEFace*>& faces)
 		AddFace(faces[nIndex]);
 }
 
-void World::Orient()
+void World::OnOrient()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -73,7 +73,7 @@ void World::Orient()
 	glLoadIdentity();
 }
 
-void World::Draw()
+void World::OnDraw()
 {
 	Vector vForward = (m_Center - m_Eye).Normalize();
 	Vector vRight = vForward.OuterProduct(GetUp());
@@ -83,7 +83,7 @@ void World::Draw()
 	Point Down = (m_Eye + 2 * Parameters::zNear * vForward - GetUp() / 2000);
 
 	Material::SetMaterialWhite();
-	glLineWidth(1.0f);
+	LineWidth::DrawNormal();
 
 	// Draw axes
 	glBegin(GL_LINES);
@@ -128,25 +128,32 @@ void World::Draw()
 	glDepthMask(GL_TRUE);
 
 	// Draw Active Object
+	Vector _scale = m_vSelectedMax - m_vSelectedMin;
 	Material::SetMaterialWhite();
-	if (!m_objSelected.empty())
-		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
-			(*iter)->DrawSelected();
+	if (m_objSelected.size() <= Parameters::nMaxDrawNumber || _scale.Module() <= Parameters::fMaxDrawSize)
+	{
+		if (!m_objSelected.empty())
+			for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+				(*iter)->DrawSelected();
+	}
+	else
+		Utility::DrawCube(m_vSelectedMin, _scale);
 	switch (Parameters::status)
 	{
-	case Parameters::TRANSLATE:
+	case States::TRANSLATE:
 		Utility::DrawTranslateAxis(m_SelectSum / m_vertSelected.size());
 		break;
-	case Parameters::SCALE:
+	case States::SCALE:
 		Utility::DrawScaleAxis(m_SelectSum / m_vertSelected.size());
 		break;
-	case Parameters::ROTATE:
+	case States::ROTATE:
 		Utility::DrawRotateAxis(m_SelectSum / m_vertSelected.size());
 		break;
 	default:
 		break;
 	}
 	glPopMatrix();
+	LineWidth::PopLineWidth();
 }
 
 HEObject* World::GetNearestObject()
@@ -212,99 +219,78 @@ HEObject* World::GetNearestObject()
 void World::RecalculateSum()
 {
 	new (&m_SelectSum) Point(0.0, 0.0, 0.0);
-	for (set<HEVert*>::iterator vertIter = m_vertSelected.begin(); vertIter != m_vertSelected.end(); ++vertIter)
+	if (!m_vertSelected.empty())
 	{
-		m_SelectSum += (*vertIter)->m_vert;
+		m_vSelectedMax = Utility::minPoint;
+		m_vSelectedMin = Utility::maxPoint;
+		for (set<HEVert*>::iterator vertIter = m_vertSelected.begin(); vertIter != m_vertSelected.end(); ++vertIter)
+		{
+			Utility::SetMax(m_vSelectedMax, (*vertIter)->m_vert);
+			Utility::SetMin(m_vSelectedMin, (*vertIter)->m_vert);
+			m_SelectSum += (*vertIter)->m_vert;
+		}
+		Parameters::fAxisLength = (m_vSelectedMax - m_vSelectedMin).Module() / 3 + Parameters::fRevisedMaginification();
 	}
 }
 
-void World::OnMouseClick(int modifiers)
+void World::OnMouseClick(int state, int modifiers)
 {
 	vector<HEVert*> verts;
 	vector<HEVert*>::iterator vertIter;
 	HEObject* obj = GetNearestObject();
-	// If Ctrl Not Down
-	if ((modifiers & GLUT_ACTIVE_CTRL) == 0)
+	switch (state)
 	{
-		new (&m_SelectSum) Point(0.0, 0.0, 0.0);
-		m_objSelected.clear();
-		m_vertSelected.clear();
-	}
-	// If Alt Not Down
-	if ((modifiers & GLUT_ACTIVE_ALT) == 0)
-	{
-		if (obj != NULL)
+	case GLUT_DOWN:
+		m_DragDir = DIR_NULL;
+		break;
+	case GLUT_UP:
+		// if it's a selection
+		if (m_DragDir == DIR_NULL)
 		{
-			set<HEObject*>::iterator iter = m_objSelected.find(obj);
-			// if not selected
-			if (iter == m_objSelected.end())
+			// If Ctrl Not Down
+			if ((modifiers & GLUT_ACTIVE_CTRL) == 0)
 			{
-				m_objSelected.insert(obj);
-				obj->ToVerts(verts);
-				for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
-				{
-					m_SelectSum += (*vertIter)->m_vert;
-					m_vertSelected.insert(*vertIter);
-				}
-			}
-			// if selected
-			else
-			{
-				m_objSelected.erase(iter);
+				m_objSelected.clear();
 				m_vertSelected.clear();
-				new (&m_SelectSum) Point(0.0, 0.0, 0.0);
-				for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+			}
+			// If Alt Not Down
+			if ((modifiers & GLUT_ACTIVE_ALT) == 0)
+			{
+				if (obj != NULL)
 				{
-					(*iter)->ToVerts(verts);
-					for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+					set<HEObject*>::iterator iter = m_objSelected.find(obj);
+					// if not selected
+					if (iter == m_objSelected.end())
 					{
-						m_SelectSum += (*vertIter)->m_vert;
-						m_vertSelected.insert(*vertIter);
+						m_objSelected.insert(obj);
+						obj->ToVerts(verts);
+						for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+						{
+							m_vertSelected.insert(*vertIter);
+						}
+					}
+					// if selected
+					else
+					{
+						m_objSelected.erase(iter);
+						m_vertSelected.clear();
+						for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+						{
+							(*iter)->ToVerts(verts);
+							for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+							{
+								m_vertSelected.insert(*vertIter);
+							}
+						}
 					}
 				}
 			}
+			RecalculateSum();
 		}
+		break;
+	default:
+		break;
 	}
-	// If Alt Down
-	//else
-	//{
-	//	m_objSelected.clear();
-	//	m_vertSelected.clear();
-	//	set<HEVert*> verts[3];
-	//	int last = 0, now = 1, next = 2;
-	//	HEVert* pVert = dynamic_cast<HEVert*>(obj);
-	//	if (pVert != NULL)
-	//	{
-	//		verts[now].insert(pVert);
-	//		m_objSelected.insert(pVert);
-	//		m_vertSelected.insert(pVert);
-	//	}
-	//	while (verts[now].empty() == false)
-	//	{
-	//		for (set<HEVert*>::iterator _iter = verts[now].begin(); _iter != verts[now].end(); ++_iter)
-	//		{
-	//			pVert = *_iter;
-	//			HEVert::VertIterator iter = pVert->beginVert();
-	//			do
-	//			{
-	//				if (verts[last].find(&(*iter)) == verts[last].end()
-	//					&& verts[now].find(&(*iter)) == verts[now].end())
-	//				{
-	//					verts[next].insert(&(*iter));
-	//					m_objSelected.insert(&(*iter));
-	//					m_vertSelected.insert(&(*iter));
-	//				}
-	//				++iter;
-	//			} while (iter != pVert->endVert());
-	//		}
-	//		printf("%d %d %d\n", verts[last].size(), verts[now].size(), verts[next].size());
-	//		OnDraw();
-	//		now = (now + 1) % 3;
-	//		last = (now + 2) % 3;
-	//		next = (now + 1) % 3;
-	//		verts[next].clear();
-	//	}
-	//}
 }
 
 void World::OnSpecialKeyDown(int key, int modifiers)
@@ -369,6 +355,19 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 	set<HEObject*> deletedObjects;
 	switch (key)
 	{
+	case 1:
+		if ((modifiers & GLUT_ACTIVE_CTRL) != 0)
+		{
+			for (vector<HEFace*>::iterator iter = m_Faces.begin(); iter != m_Faces.end(); ++iter)
+			{
+				if (dynamic_cast<HENullFace*>(*iter) == NULL)
+					m_objSelected.insert(*iter);
+			}
+			for (vector<HEVert*>::iterator iter = ++m_Vertices.begin(); iter != m_Vertices.end(); ++iter)
+				m_vertSelected.insert(*iter);
+		}
+		RecalculateSum();
+		break;
 	case 27:
 		exit(0);
 	case 'w':
@@ -387,27 +386,28 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		m_Eye += 0.01 / vRight.Module() * vRight;
 		m_Center += 0.01 / vRight.Module() * vRight;
 		break;
-	case 'g':
-		OnMouseDrag(Parameters::fRevisedMaginification(),0);
-		break;
-	case 'h':
-		OnMouseDrag(Parameters::fRevisedMaginification(), 1);
-		break;
-	case 'j':
-		OnMouseDrag(Parameters::fRevisedMaginification(), 2);
-		break;
-	case 't':
-		OnMouseDrag(- Parameters::fRevisedMaginification(), 0);
-		break;
-	case 'y':
-		OnMouseDrag(- Parameters::fRevisedMaginification(), 1);
-		break;
-	case 'u':
-		OnMouseDrag(- Parameters::fRevisedMaginification(), 2);
-		break;
+	//case 'g':
+	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
+	//	break;
+	//case 'h':
+	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)1, (Direction)1);
+	//	break;
+	//case 'j':
+	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)2, (Direction)2);
+	//	break;
+	//case 't':
+	//	OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
+	//	break;
+	//case 'y':
+	//	OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)1, (Direction)1);
+	//	break;
+	//case 'u':
+	//	OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)2, (Direction)2);
+	//	break;
 	case 127:
 		// if select one object
 		if (m_objSelected.size() == 1)
+		{
 			if ((modifiers & GLUT_ACTIVE_ALT) == 0)
 				(*m_objSelected.begin())->Delete(deletedObjects);
 			else
@@ -416,8 +416,10 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 				if ((edge = dynamic_cast<HEEdge*>(*m_objSelected.begin())) != NULL)
 					edge->DeleteWithoutMove(deletedObjects);
 			}
+		}
 		// if multipule objects selected, only deal with faces
 		else
+		{
 			for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
 			{
 				HEFace* face;
@@ -426,21 +428,22 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 					face->Delete(deletedObjects);
 				}
 			}
+		}
 		m_objSelected.clear();
 		m_vertSelected.clear();
 		DeleteObjects(deletedObjects);
 		break;
 	case 'x':
-		Parameters::status = (Parameters::states)((Parameters::status + 1) % 3);
+		Parameters::status = ((int)Parameters::status + 1) % 3;
 	default:
 		break;
 	}
 	RecalculateSum();
 }
 
-void World::OnMouseDrag(GLdouble scale, int dir)
+void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 {
-	GLdouble angle = scale / 10 * 2 * Parameters::PI;
+	GLdouble angle = scale / (m_WindowWidth / 40) * 2 * Parameters::PI;
 	Point pCenter(m_SelectSum / m_vertSelected.size());
 	Vector bases[3] =
 	{
@@ -454,41 +457,49 @@ void World::OnMouseDrag(GLdouble scale, int dir)
 		{ 0.0, 1.0, 0.0, 0.0 },
 		{ 0.0, 0.0, 1.0, 0.0 },
 	};
-	switch (dir)
-	{
-	case 0:
-		Rotation[1][1] = cos(angle); Rotation[1][2] = - sin(angle);
-		Rotation[2][1] = sin(angle); Rotation[2][2] = cos(angle);
-		break;
-	case 1:
-		Rotation[0][0] = cos(angle); Rotation[0][2] = - sin(angle);
-		Rotation[2][0] = sin(angle); Rotation[2][2] = cos(angle);
-		break;
-	case 2:
-		Rotation[0][0] = cos(angle); Rotation[0][1] = - sin(angle);
-		Rotation[1][0] = sin(angle); Rotation[1][1] = cos(angle);
-		break;
-	default:
-		assert(false);
-		break;
-	}
-	assert(dir >=0 && dir <= 2);
+	MYASSERT(dir >= DIR_X && dir <= DIR_Z);
+	if (Parameters::status == States::ROTATE)
+		dir = mindir;
+	if (m_DragDir != DIR_NULL)
+		dir = m_DragDir;
+	else
+		m_DragDir = dir;
 	switch (Parameters::status)
 	{
-	case Parameters::TRANSLATE:
+	case States::TRANSLATE:
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
 			**iter += scale * bases[dir];
 		break;
-	case Parameters::SCALE:
+	case States::SCALE:
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter = ((*iter)->m_vert - pCenter).VectorProduct((exp(scale) - 1) * bases[dir] + Vector(1.0, 1.0, 1.0)) + pCenter;
+			**iter = ((*iter)->m_vert - pCenter).VectorProduct((scale <= 0 ? exp(scale) - 1 : log(scale + 1)) * bases[dir] + Vector(1.0, 1.0, 1.0)) + pCenter;
 		break;
-	case Parameters::ROTATE:
+	case States::ROTATE:
+		switch (mindir)
+		{
+		case DIR_X:
+			Rotation[1][1] = cos(angle); Rotation[1][2] = - sin(angle);
+			Rotation[2][1] = sin(angle); Rotation[2][2] = cos(angle);
+			break;
+		case DIR_Y:
+			Rotation[0][0] = cos(angle); Rotation[0][2] = - sin(angle);
+			Rotation[2][0] = sin(angle); Rotation[2][2] = cos(angle);
+			break;
+		case DIR_Z:
+			Rotation[0][0] = cos(angle); Rotation[0][1] = - sin(angle);
+			Rotation[1][0] = sin(angle); Rotation[1][1] = cos(angle);
+			break;
+		default:
+			MYASSERT(false);
+			break;
+		}
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
 			**iter = Transform(Rotation, (*iter)->m_vert - pCenter) + pCenter;
+		if (m_DragDir == DIR_NULL)
+			m_DragDir = (Direction)mindir;
 		break;
 	default:
-		assert(false);
+		MYASSERT(false);
 		break;
 	}
 	RecalculateSum();

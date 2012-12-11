@@ -6,6 +6,7 @@
 typedef class Vector
 {
 public:
+	Vector();
 	Vector(GLdouble x, GLdouble y, GLdouble z);
 	Vector(const HEVert* vert);
 	//Vector(HEEdge* edge);

@@ -35,7 +35,8 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 		}
 		else
 		{
-			assert(edgePairs.insert(pair<pair<int,int>, HEEdge*>(pair<int,int>(vFrom, vTo), tempEdge)).second);
+			bool flag = edgePairs.insert(pair<pair<int,int>, HEEdge*>(pair<int,int>(vFrom, vTo), tempEdge)).second;
+			MYASSERT(flag);
 		}
 		if (lastEdge != NULL)
 		{
@@ -63,7 +64,8 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 	}
 	else
 	{
-		assert(edgePairs.insert(pair<pair<int,int>, HEEdge*>(pair<int,int>(vTo, vFirst), tempEdge)).second);
+		bool flag = edgePairs.insert(pair<pair<int,int>, HEEdge*>(pair<int,int>(vTo, vFirst), tempEdge)).second
+		MYASSERT(flag);
 	}
 	_Vertices[vTo]->m_edge = tempEdge;
 	tempEdge->m_vert = _Vertices[vTo];
@@ -104,6 +106,8 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 			GLfloat x, y, z;
 			sscanf(line, "%f%f%f", &x, &y, &z);
 			tempVert = new HEVert(x, y, z);
+			Utility::SetMax(Parameters::m_vMax, tempVert->m_vert);
+			Utility::SetMin(Parameters::m_vMin, tempVert->m_vert);
 			_Vertices.push_back(tempVert);
 		}
 		else if (strcmp(prefix, "vn") == 0)
@@ -162,7 +166,7 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 		}
 		else
 		{
-			assert(false);
+			MYASSERT(false);
 		}
 		tempFace = new HENullFace();
 		ReadFace(line, edgePairs, _Vertices, _TextPoints, _NormVectors, tempFace, NULL);
@@ -173,4 +177,8 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 	delete [] strName;
 	delete [] word;
 	fclose(fd);
+
+	// set parameters
+	Parameters::nMaxDrawNumber = log(_Vertices.size()) * 2;
+	Parameters::fMaxDrawSize = (Parameters::m_vMax - Parameters::m_vMin).Module() / 8;
 }

@@ -8,7 +8,13 @@ HEEdge::HEEdge() : m_pair(NULL)
 
 void HEEdge::DrawSelected()
 {
-	glLineWidth(5.0f);
+	LineWidth::DrawHighLight();
+	DrawSelectedInner();
+	LineWidth::PopLineWidth();
+}
+
+void HEEdge::DrawSelectedInner()
+{
 	// Draw Line
 	glBegin(GL_LINES);
 	VertIterator iter = beginVert();
@@ -24,11 +30,10 @@ void HEEdge::DrawSelected()
 	iter = beginVert();
 	do
 	{
-		iter->DrawSelected();
+		iter->DrawSelectedInner();
 		++iter;
 	}
 	while (iter != endVert());
-	glLineWidth(1.0f);
 }
 
 double HEEdge::Intersect(const Point& point1, const Vector& dir1)

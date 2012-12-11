@@ -75,6 +75,15 @@
     <ClInclude Include="HENullFace.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="LineWidth.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Direction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="States.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -120,6 +129,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LineWidth.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="States.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

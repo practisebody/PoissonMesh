@@ -64,6 +64,8 @@
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -79,6 +81,8 @@
     <ClCompile Include="HEFace.cpp" />
     <ClCompile Include="HENullFace.cpp" />
     <ClCompile Include="HEVert.cpp" />
+    <ClCompile Include="LineWidth.cpp" />
+    <ClCompile Include="States.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Parameters.cpp" />
@@ -92,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmp.h" />
+    <ClInclude Include="Direction.h" />
     <ClInclude Include="HalfEdgeDeclaration.h" />
     <ClInclude Include="HEEdge.h" />
     <ClInclude Include="HEEdgeIterators.h" />
@@ -102,11 +107,13 @@
     <ClInclude Include="HEVert.h" />
     <ClInclude Include="HEVertIterators.h" />
     <ClInclude Include="Iterator.h" />
+    <ClInclude Include="LineWidth.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="mtl.h" />
     <ClInclude Include="obj.h" />
+    <ClInclude Include="States.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Vector.h" />

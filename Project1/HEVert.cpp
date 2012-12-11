@@ -13,12 +13,17 @@ HEVert::HEVert(Vector vector) : m_vert(vector.m_x,vector.m_y, vector.m_z), m_edg
 
 void HEVert::DrawSelected()
 {
-	glLineWidth(5.0f);
+	LineWidth::DrawHighLight();
+	DrawSelectedInner();
+	LineWidth::PopLineWidth();
+}
+
+void HEVert::DrawSelectedInner()
+{
 	glPushMatrix();
 	glTranslated(m_vert.m_x, m_vert.m_y, m_vert.m_z);
 	glutWireCube(0.5);
 	glPopMatrix();
-	glLineWidth(1.0f);
 }
 
 double HEVert::Intersect(const Point& point, const Vector& dir)

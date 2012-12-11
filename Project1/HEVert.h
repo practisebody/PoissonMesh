@@ -20,6 +20,7 @@ struct HEVert : public HEObject
 	HEVert(GLdouble _x, GLdouble _y, GLdouble _z);
 	HEVert(Vector vector);
 	virtual void DrawSelected();
+	void DrawSelectedInner();
 	virtual double Intersect(const Point& poing, const Vector& dir);
 	virtual void ToVerts(vector<HEVert*>& vector);
 	virtual HEVert* InsertVertex(vector<HEFace*>& faces);

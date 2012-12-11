@@ -11,6 +11,7 @@ void HEFace::Draw()
 		if (m_mtl && m_mtl->IsTransparent() == false)
 			glTexCoord2f(iter->m_text->m_x, iter->m_text->m_y);
 		glVertex3d(iter->m_vert->m_vert.m_x, iter->m_vert->m_vert.m_y, iter->m_vert->m_vert.m_z);
+		//glNormal3d(iter->m_norm->m_x, iter->m_norm->m_y, iter->m_norm->m_z);
 		++iter;
 	} while (iter != endEdge());
 	glEnd();
@@ -18,12 +19,29 @@ void HEFace::Draw()
 
 void HEFace::DrawSelected()
 {
-	EdgeIterator iter = beginEdge();
+	LineWidth::DrawHighLight();
+	DrawSelectedInner();
+	LineWidth::PopLineWidth();
+}
+
+void HEFace::DrawSelectedInner()
+{
+	// Draw Lines
+	glBegin(GL_POLYGON);
+	EdgeIterator eIter = beginEdge();
 	do
 	{
-		iter->DrawSelected();
-		++iter;
-	} while (iter != endEdge());
+		glVertex3d(eIter->m_vert->m_vert.m_x, eIter->m_vert->m_vert.m_y, eIter->m_vert->m_vert.m_z);
+		++eIter;
+	} while (eIter != endEdge());
+	glEnd();
+	// Draw Points
+	VertIterator vIter = beginVert();
+	do
+	{
+		vIter->DrawSelectedInner();
+		++vIter;
+	} while (vIter != endVert());
 }
 
 double HEFace::Intersect(const Point& D, const Vector& E)

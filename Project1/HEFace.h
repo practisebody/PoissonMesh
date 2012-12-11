@@ -19,6 +19,7 @@ struct HEFace : public HEObject
 	Material* m_mtl;
 	virtual void Draw();
 	virtual void DrawSelected();
+	void DrawSelectedInner();
 	virtual double Intersect(const Point& D, const Vector& E);
 	virtual void ToVerts(vector<HEVert*>& vector);
 	virtual HEVert* InsertVertex(vector<HEFace*>& faces);

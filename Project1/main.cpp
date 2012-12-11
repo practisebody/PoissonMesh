@@ -4,22 +4,13 @@
 World theWorld(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), 
 			   0.5, 0.5, 0.5, 0.0, 0.0, 0.0, -0.5, -0.5, 1.0);
 
-void getFPS()
+void PrintfInfo()
 {
 	static int frame = 0, time, timebase = 0;
-	static char buffer[256];
-
-	frame++;
-	time=glutGet(GLUT_ELAPSED_TIME);
-	if (time - timebase > 1000) {
-		sprintf(buffer,"FPS:%4.2f",
-			frame*1000.0/(time-timebase));
-		timebase = time;		
-		frame = 0;
-	}
-
-	//glutSetWindowTitle(buffer);
-	char *c;
+	static char fps[1024];
+	static char info[1024];
+	
+	Material::SetMaterialWhite();
 	glMatrixMode(GL_PROJECTION);// 选择投影矩阵
 	glPushMatrix();// 保存原矩阵
 	glLoadIdentity();// 装入单位矩阵
@@ -27,8 +18,26 @@ void getFPS()
 	glMatrixMode(GL_MODELVIEW);// 选择Modelview矩阵
 	glPushMatrix();// 保存原矩阵
 	glLoadIdentity();// 装入单位矩阵*/
-	glRasterPos2f(10,10);
-	for (c=buffer; *c != '\0'; c++) {		
+
+	frame++;
+	time = glutGet(GLUT_ELAPSED_TIME);
+	if (time - timebase > 1000)
+	{
+		sprintf(fps, "FPS:%4.2f", frame * 1000.0 / (time - timebase));
+		timebase = time;		
+		frame = 0;
+	}
+
+	glRasterPos2i(10, 10);
+	for (char *c = fps; *c != '\0'; c++)
+	{		
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+	}
+	sprintf(info, "Scale:%4.2ex  Display Mode:%s  Modify Mode:%s", Parameters::fMagnification,
+			(Parameters::bLine) ? ("Line") : ("Fill"), (char*)Parameters::status);
+	glRasterPos2i(10, 20);
+	for (char *c = info; *c != '\0'; c++)
+	{		
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
 	}
 	glMatrixMode(GL_PROJECTION);// 选择投影矩阵
@@ -96,14 +105,7 @@ void OnSpecialKeyDown(int key, int x, int y)
 
 void OnMouseClick(int button, int state, int x, int y)
 {
-	switch (state)
-	{
-	case GLUT_DOWN:
-		theWorld.OnMouseClick(glutGetModifiers());
-	case GLUT_UP:
-		//theWorld.m_objSelected = NULL;
-		break;
-	}
+	theWorld.OnMouseClick(state, glutGetModifiers());
 }
 
 void FixMouse(int& x, int& y)
@@ -204,11 +206,20 @@ void OnMouseDrag(int x, int y)
 		GLdouble yscale = (yu * cursoru + yn * cursorn) / sqrt(yu * yu + yn * yn);
 		GLdouble zscale = (zu * cursoru + zn * cursorn) / sqrt(zu * zu + zn * zn);
 		if (fabs(xscale) > fabs(yscale) && fabs(xscale) > fabs(zscale))
-			theWorld.OnMouseDrag(xscale, 0);
+			if (fabs(yscale) > fabs(zscale))
+				theWorld.OnMouseDrag(xscale, DIR_X, DIR_Z);
+			else
+				theWorld.OnMouseDrag(xscale, DIR_X, DIR_Y);
 		if (fabs(yscale) > fabs(xscale) && fabs(yscale) > fabs(zscale))
-			theWorld.OnMouseDrag(yscale, 1);
+			if (fabs(xscale) > fabs(zscale))
+				theWorld.OnMouseDrag(yscale, DIR_Y, DIR_Z);
+			else
+				theWorld.OnMouseDrag(yscale, DIR_Y, DIR_X);
 		if (fabs(zscale) > fabs(xscale) && fabs(zscale) > fabs(yscale))
-			theWorld.OnMouseDrag(zscale, 2);
+			if (fabs(xscale) > fabs(yscale))
+				theWorld.OnMouseDrag(zscale, DIR_Z, DIR_Y);
+			else
+				theWorld.OnMouseDrag(zscale, DIR_Z, DIR_X);
 	}
 	OnMouseMove(x, y);
 }
@@ -223,10 +234,9 @@ void OnDraw()
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	theWorld.Orient();
-	theWorld.Draw();
-	Material::SetMaterialWhite();
-	getFPS();
+	theWorld.OnOrient();
+	theWorld.OnDraw();
+	PrintfInfo();
 
 	glFlush();
 }

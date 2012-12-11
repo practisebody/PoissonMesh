@@ -20,8 +20,8 @@ void HEEdge::DrawSelectedInner()
 	VertIterator iter = beginVert();
 	do
 	{
-		glVertex3d(iter->m_vert.m_x, iter->m_vert.m_y, iter->m_vert.m_z);
-		glNormal3d(iter->m_edge->m_norm->m_x, iter->m_edge->m_norm->m_y, iter->m_edge->m_norm->m_z);
+		glVertex3d(iter->m_vert[0], iter->m_vert[1], iter->m_vert[2]);
+		glNormal3d((*iter->m_edge->m_norm)[0], (*iter->m_edge->m_norm)[1], (*iter->m_edge->m_norm)[2]);
 		++iter;
 	}
 	while (iter != endVert());
@@ -88,7 +88,7 @@ HEEdge* HEEdge::left()
 
 HEVert* HEEdge::InsertVertex(vector<HEFace*>& /*faces*/)
 {
-	HEVert* vRet = new HEVert((m_vert->m_vert + m_next->m_vert->m_vert) / 2);
+	HEVert* vRet = new HEVert(MidPoint(m_vert->m_vert, m_next->m_vert->m_vert));
 	// new edges
 	HEEdge* eLeave = new HEEdge();
 	HEEdge* eArrive = new HEEdge();
@@ -96,7 +96,7 @@ HEVert* HEEdge::InsertVertex(vector<HEFace*>& /*faces*/)
 	eLeave->m_pair = eArrive;
 	eLeave->m_face = m_face;
 	eLeave->m_next = m_next;
-	eLeave->m_text = new Point((*m_text + *(m_next->m_text)) / 2);
+	eLeave->m_text = new Point(MidPoint(m_text, m_next->m_text));
 	eLeave->m_norm = new Vector((*m_norm + *(m_next->m_norm)) / 2);
 	eArrive->m_vert = m_next->m_vert;
 	eArrive->m_pair = eLeave;
@@ -107,8 +107,8 @@ HEVert* HEEdge::InsertVertex(vector<HEFace*>& /*faces*/)
 	// fix original edges
 	m_pair->m_vert = vRet;
 	m_pair->prev()->m_next = eArrive;
-	m_pair->m_text = new Point((*(m_pair->m_text) + *(m_pair->m_next->m_text)) / 2);
-	m_pair->m_norm = new Point((*(m_pair->m_norm) + *(m_pair->m_next->m_norm)) / 2);
+	m_pair->m_text = new Point(MidPoint(m_pair->m_text, m_pair->m_next->m_text));
+	m_pair->m_norm = new Vector((*(m_pair->m_norm) + *(m_pair->m_next->m_norm)) / 2);
 	m_next = eLeave;
 	// fix vertices
 	if (m_next->m_vert->m_edge == m_pair)
@@ -154,7 +154,7 @@ void HEEdge::Delete(bool first, set<HEObject*>& deletedObjects)
 	if (first == true)
 	{
 		// move to center
-		vLeave->m_vert = (vLeave->m_vert + vArrive->m_vert) / 2;
+		vLeave->m_vert = MidPoint(vLeave->m_vert, vArrive->m_vert);
 		HEVert::EdgeIterator iter =  vArrive->beginEdge();
 		do
 		{

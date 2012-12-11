@@ -66,8 +66,8 @@ void World::OnOrient()
 	glLoadIdentity();
 
 	gluPerspective(45.0, (GLdouble)m_WindowWidth / m_WindowHeight, Parameters::zNear, Parameters::zFar);
-	gluLookAt(m_Eye.m_x, m_Eye.m_y, m_Eye.m_z, m_Center.m_x, m_Center.m_y, m_Center.m_z,
-		m_Up.m_x, m_Up.m_y, m_Up.m_z);
+	gluLookAt(m_Eye[0], m_Eye[1], m_Eye[2], m_Center[0], m_Center[1], m_Center[2],
+		m_Up[0], m_Up[1], m_Up[2]);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -87,20 +87,20 @@ void World::OnDraw()
 
 	// Draw axes
 	glBegin(GL_LINES);
-		glVertex3d(m_Eye.m_x - 100.0, 0.0, 0.0);
-		glVertex3d(m_Eye.m_x + 100.0, 0.0, 0.0);
-		glVertex3d(0.0, m_Eye.m_y - 100.0, 0.0);
-		glVertex3d(0.0, m_Eye.m_y + 100.0, 0.0);
-		glVertex3d(0.0, 0.0, m_Eye.m_z - 100.0);
-		glVertex3d(0.0, 0.0, m_Eye.m_z + 100.0);
+		glVertex3d(m_Eye[0] - 100.0, 0.0, 0.0);
+		glVertex3d(m_Eye[0] + 100.0, 0.0, 0.0);
+		glVertex3d(0.0, m_Eye[1] - 100.0, 0.0);
+		glVertex3d(0.0, m_Eye[1] + 100.0, 0.0);
+		glVertex3d(0.0, 0.0, m_Eye[2] - 100.0);
+		glVertex3d(0.0, 0.0, m_Eye[2] + 100.0);
 	glEnd();
 
 	// Draw cursor
 	glBegin(GL_LINES);
-		glVertex3d(Left.m_x, Left.m_y, Left.m_z);
-		glVertex3d(Right.m_x, Right.m_y, Right.m_z);
-		glVertex3d(Up.m_x, Up.m_y, Up.m_z);
-		glVertex3d(Down.m_x, Down.m_y, Down.m_z);
+		glVertex3d(Left[0], Left[1], Left[2]);
+		glVertex3d(Right[0], Right[1], Right[2]);
+		glVertex3d(Up[0], Up[1], Up[2]);
+		glVertex3d(Down[0], Down[1], Down[2]);
 	glEnd();
 
 	// Draw Objects
@@ -227,7 +227,7 @@ void World::RecalculateSum()
 		{
 			Utility::SetMax(m_vSelectedMax, (*vertIter)->m_vert);
 			Utility::SetMin(m_vSelectedMin, (*vertIter)->m_vert);
-			m_SelectSum += (*vertIter)->m_vert;
+			m_SelectSum += (Vector)(*vertIter)->m_vert;
 		}
 		Parameters::fAxisLength = (m_vSelectedMax - m_vSelectedMin).Module() / 3 + Parameters::fRevisedMaginification();
 	}
@@ -472,7 +472,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 		break;
 	case States::SCALE:
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter = ((*iter)->m_vert - pCenter).VectorProduct((scale <= 0 ? exp(scale) - 1 : log(scale + 1)) * bases[dir] + Vector(1.0, 1.0, 1.0)) + pCenter;
+			**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct((scale <= 0 ? exp(scale) - 1 : log(scale + 1)) * bases[dir] + Vector(1.0, 1.0, 1.0));
 		break;
 	case States::ROTATE:
 		switch (mindir)
@@ -494,7 +494,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 			break;
 		}
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter = Transform(Rotation, (*iter)->m_vert - pCenter) + pCenter;
+			**iter = pCenter + (Vector)Transform(Rotation, (*iter)->m_vert - pCenter);
 		if (m_DragDir == DIR_NULL)
 			m_DragDir = (Direction)mindir;
 		break;

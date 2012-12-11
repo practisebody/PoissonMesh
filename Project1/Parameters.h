@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "States.h"
-#include "Vector.h"
+#include "Point.h"
 
 #define BLACK 0.0f, 0.0f, 0.0f
 #define WHITE 1.0f, 1.0f, 1.0f

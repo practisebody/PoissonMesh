@@ -82,8 +82,10 @@
     <ClCompile Include="HENullFace.cpp" />
     <ClCompile Include="HEVert.cpp" />
     <ClCompile Include="LineWidth.cpp" />
+    <ClCompile Include="Point.cpp" />
     <ClCompile Include="States.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Triple.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="HalfEdge.h" />
@@ -96,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmp.h" />
+    <ClInclude Include="defines.h" />
     <ClInclude Include="Direction.h" />
     <ClInclude Include="HalfEdgeDeclaration.h" />
     <ClInclude Include="HEEdge.h" />
@@ -113,8 +116,10 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="mtl.h" />
     <ClInclude Include="obj.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="States.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Triple.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="World.h" />

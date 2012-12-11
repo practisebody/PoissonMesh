@@ -9,8 +9,8 @@ void HEFace::Draw()
 	do
 	{
 		if (m_mtl && m_mtl->IsTransparent() == false)
-			glTexCoord2f(iter->m_text->m_x, iter->m_text->m_y);
-		glVertex3d(iter->m_vert->m_vert.m_x, iter->m_vert->m_vert.m_y, iter->m_vert->m_vert.m_z);
+			glTexCoord2d((*iter->m_text)[0], (*iter->m_text)[1]);
+		glVertex3d(iter->m_vert->m_vert[0], iter->m_vert->m_vert[1], iter->m_vert->m_vert[2]);
 		//glNormal3d(iter->m_norm->m_x, iter->m_norm->m_y, iter->m_norm->m_z);
 		++iter;
 	} while (iter != endEdge());
@@ -31,7 +31,7 @@ void HEFace::DrawSelectedInner()
 	EdgeIterator eIter = beginEdge();
 	do
 	{
-		glVertex3d(eIter->m_vert->m_vert.m_x, eIter->m_vert->m_vert.m_y, eIter->m_vert->m_vert.m_z);
+		glVertex3d(eIter->m_vert->m_vert[0], eIter->m_vert->m_vert[1], eIter->m_vert->m_vert[2]);
 		++eIter;
 	} while (eIter != endEdge());
 	glEnd();
@@ -46,12 +46,11 @@ void HEFace::DrawSelectedInner()
 
 double HEFace::Intersect(const Point& D, const Vector& E)
 {
-	Point A(m_edge->m_vert);
-	Vector B(m_edge->m_next->m_vert), C(m_edge->m_next->m_next->m_vert);
-	C = (C - B);
-	B = (B - A);
+	Point A(m_edge->m_vert), _B(m_edge->m_next->m_vert), _C(m_edge->m_next->m_next->m_vert);
+	Vector C = (_C - _B);
+	Vector B = (_B - A);
 	Vector vNormal = B.OuterProduct(C);
-	double t = (A * vNormal - D * vNormal) / (E * vNormal);
+	double t = ((Vector)A * vNormal - (Vector)D * vNormal) / (E * vNormal);
 	if (t < Parameters::zFar && t > Parameters::zNear)
 	{
 		if (InPlane(D + t * E))
@@ -87,9 +86,9 @@ HEVert* HEFace::InsertVertex(vector<HEFace*>& faces)
 	EdgeIterator iter = beginEdge();
 	do
 	{
-		pCenter += iter->m_vert->m_vert;
+		pCenter += (Vector)iter->m_vert->m_vert;
 		*vNorm += *iter->m_norm;
-		*vText += *iter->m_text;
+		*vText += (Vector)*iter->m_text;
 		edges.push_back(&*iter);
 		++nCount;
 		++iter;
@@ -152,13 +151,13 @@ void HEFace::Delete(set<HEObject*>& deletedObjects)
 	int count = 3;
 	while (m_edge->m_next->m_next->m_next != m_edge)
 	{
-		pCenter += m_edge->m_vert->m_vert;
+		pCenter += (Vector)m_edge->m_vert->m_vert;
 		++count;
 		m_edge->Delete(deletedObjects);
 	}
-	pCenter += m_edge->m_vert->m_vert;
-	pCenter += m_edge->m_next->m_vert->m_vert;
-	pCenter += m_edge->m_next->m_next->m_vert->m_vert;
+	pCenter += (Vector)m_edge->m_vert->m_vert;
+	pCenter += (Vector)m_edge->m_next->m_vert->m_vert;
+	pCenter += (Vector)m_edge->m_next->m_next->m_vert->m_vert;
 	m_edge->Delete(deletedObjects);
 	m_edge->m_next->m_pair->Delete(deletedObjects);
 	pCenter = pCenter / count;

@@ -9,14 +9,14 @@ void Utility::DrawBasicAxis(const Point& here)
 	LineWidth::DrawAxis();
 	glBegin(GL_LINES);
 		Material::SetColorRGB(MATERTIAL_RED);
-		glVertex3d(here.m_x, here.m_y, here.m_z);
-		glVertex3d(here.m_x + Parameters::fAxisLength * 1.2, here.m_y, here.m_z);
+		glVertex3d(here[0], here[1], here[2]);
+		glVertex3d(here[0] + Parameters::fAxisLength * 1.2, here[1], here[2]);
 		Material::SetColorRGB(MATERTIAL_GREEN);
-		glVertex3d(here.m_x, here.m_y, here.m_z);
-		glVertex3d(here.m_x, here.m_y + Parameters::fAxisLength * 1.2, here.m_z);
+		glVertex3d(here[0], here[1], here[2]);
+		glVertex3d(here[0], here[1] + Parameters::fAxisLength * 1.2, here[2]);
 		Material::SetColorRGB(MATERTIAL_BLUE);
-		glVertex3d(here.m_x, here.m_y, here.m_z);
-		glVertex3d(here.m_x, here.m_y, here.m_z + Parameters::fAxisLength * 1.2);
+		glVertex3d(here[0], here[1], here[2]);
+		glVertex3d(here[0], here[1], here[2] + Parameters::fAxisLength * 1.2);
 	glEnd();
 	LineWidth::PopLineWidth();
 }
@@ -41,11 +41,11 @@ void Utility::DrawScaleAxis(const Point& here)
 	Material::SetMaterialWhite();
 	glBegin(GL_LINE_LOOP);
 		Material::SetColorRGB(MATERTIAL_RED);
-		glVertex3d(here.m_x + Parameters::fAxisLength * 0.5, here.m_y, here.m_z);
+		glVertex3d(here[0] + Parameters::fAxisLength * 0.5, here[1], here[2]);
 		Material::SetColorRGB(MATERTIAL_GREEN);
-		glVertex3d(here.m_x, here.m_y + Parameters::fAxisLength * 0.5, here.m_z);
+		glVertex3d(here[0], here[1] + Parameters::fAxisLength * 0.5, here[2]);
 		Material::SetColorRGB(MATERTIAL_BLUE);
-		glVertex3d(here.m_x, here.m_y, here.m_z + Parameters::fAxisLength * 0.5);
+		glVertex3d(here[0], here[1], here[2] + Parameters::fAxisLength * 0.5);
 	glEnd();
 	LineWidth::PopLineWidth();
 }
@@ -55,7 +55,7 @@ void Utility::DrawRotateAxis(const Point& here)
 	DrawBasicAxis(here);
 	LineWidth::DrawAxis();
 	glPushMatrix();
-	glTranslated(here.m_x, here.m_y, here.m_z);
+	Translated(here);
 	glPushMatrix();
 		Material::SetColorRGB(MATERTIAL_BLUE);
 		DrawCircle(Parameters::fAxisLength * 0.9, 360);
@@ -79,23 +79,31 @@ void Utility::DrawCube(const Point& leftdown, const Vector& scale)
 	Point center = leftdown + scale / 2;
 	LineWidth::DrawAxis();
 	glPushMatrix();
-		glTranslated(center.m_x, center.m_y, center.m_z);
-		glScaled(1.2 * scale.m_x, 1.2 * scale.m_y, 1.2 * scale.m_z);
+		Translated(center);
+		Scaled(1.2 * scale);
 		glutWireCube(1.0);
 	glPopMatrix();
 	LineWidth::PopLineWidth();
 }
 
+void Utility::Translated(const _Triple& triple)
+{
+	glTranslated(triple[0], triple[1], triple[2]);
+}
+
+void Utility::Scaled(const _Triple& triple)
+{
+	glScaled(triple[0], triple[1], triple[2]);
+}
+
 void Utility::SetMin(Point& a, const Point& b)
 {
-	SetMin(a.m_x, b.m_x);
-	SetMin(a.m_y, b.m_y);
-	SetMin(a.m_z, b.m_z);
+	for (int i = 0; i < 3; ++i)
+		SetMin(a[i], b[i]);
 }
 
 void Utility::SetMax(Point& a, const Point& b)
 {
-	SetMax(a.m_x, b.m_x);
-	SetMax(a.m_y, b.m_y);
-	SetMax(a.m_z, b.m_z);
+	for (int i = 0; i < 3; ++i)
+		SetMax(a[i], b[i]);
 }

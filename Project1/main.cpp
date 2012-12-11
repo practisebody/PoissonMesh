@@ -148,9 +148,9 @@ void OnMouseMove(int x, int y)
 	Vector n = theWorld.GetUp();
 	GLdouble WorldtoView[3][4] =
 	{
-		{ u.m_x, u.m_y, u.m_z, -(u * theWorld.m_Eye) },
-		{ v.m_x, v.m_y, v.m_z, -(v * theWorld.m_Eye) },
-		{ n.m_x, n.m_y, n.m_z, -(n * theWorld.m_Eye) },
+		{ u[0], u[1], u[2], -(u * (Vector)theWorld.m_Eye) },
+		{ v[0], v[1], v[2], -(v * (Vector)theWorld.m_Eye) },
+		{ n[0], n[1], n[2], -(n * (Vector)theWorld.m_Eye) },
 	};
 	GLdouble HorizontalRotation[4][4] =
 	{
@@ -166,9 +166,9 @@ void OnMouseMove(int x, int y)
 	};
 	GLdouble ViewtoWorld[4][4] =
 	{
-		{ u.m_x, v.m_x, n.m_x, theWorld.m_Eye.m_x },
-		{ u.m_y, v.m_y, n.m_y, theWorld.m_Eye.m_y },
-		{ u.m_z, v.m_z, n.m_z, theWorld.m_Eye.m_z },
+		{ u[0], v[0], n[0], theWorld.m_Eye[0] },
+		{ u[1], v[1], n[1], theWorld.m_Eye[1] },
+		{ u[2], v[2], n[2], theWorld.m_Eye[2] },
 	};
 	theWorld.m_Center = (Transform(ViewtoWorld, Transform(HorizontalRotation,
 		Transform(WorldtoView, theWorld.m_Center))));
@@ -198,9 +198,9 @@ void OnMouseDrag(int x, int y)
 		Vector u = vRight.Normalize();
 		Vector v = vForward.Normalize();
 		Vector n = theWorld.GetUp();
-		GLdouble xu = u.m_x - (u * theWorld.m_Eye), xn = n.m_x - (n * theWorld.m_Eye);
-		GLdouble yu = u.m_y - (u * theWorld.m_Eye), yn = n.m_y - (n * theWorld.m_Eye);
-		GLdouble zu = u.m_z - (u * theWorld.m_Eye), zn = n.m_z - (n * theWorld.m_Eye);
+		GLdouble xu = u[0] - (u * (Vector)theWorld.m_Eye), xn = n[0] - (n * (Vector)theWorld.m_Eye);
+		GLdouble yu = u[1] - (u * (Vector)theWorld.m_Eye), yn = n[1] - (n * (Vector)theWorld.m_Eye);
+		GLdouble zu = u[2] - (u * (Vector)theWorld.m_Eye), zn = n[2] - (n * (Vector)theWorld.m_Eye);
 		GLdouble cursoru = x - theWorld.lastx, cursorn = theWorld.lasty - y;
 		GLdouble xscale = (xu * cursoru + xn * cursorn) / sqrt(xu * xu + xn * xn);
 		GLdouble yscale = (yu * cursoru + yn * cursorn) / sqrt(yu * yu + yn * yn);

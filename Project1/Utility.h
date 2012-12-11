@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "LineWidth.h"
 #include "Vector.h"
+#include "Point.h"
 #include "HalfEdgeDeclaration.h"
 
 class Utility
@@ -19,6 +20,8 @@ public:
 	static void DrawScaleAxis(const Point& here);
 	static void DrawRotateAxis(const Point& here);
 	static void DrawCube(const Point& leftdown, const Vector& scale);
+	static void Translated(const _Triple& triple);
+	static void Scaled(const _Triple& triple);
 	template<typename T>
 	static void SetMin(T& a, const T& b);
 	template<typename T>

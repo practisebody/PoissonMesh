@@ -84,6 +84,15 @@
     <ClInclude Include="States.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Triple.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="defines.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -135,6 +144,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="States.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Triple.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

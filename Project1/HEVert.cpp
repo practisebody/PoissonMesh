@@ -6,7 +6,7 @@ HEVert::HEVert(GLdouble _x, GLdouble _y, GLdouble _z) : m_vert(_x, _y, _z), m_ed
 {
 }
 
-HEVert::HEVert(Vector vector) : m_vert(vector.m_x,vector.m_y, vector.m_z), m_edge(NULL)
+HEVert::HEVert(const Point& point) : m_vert(point[0] , point[1], point[2]), m_edge(NULL)
 {
 	//m_vert = m_vert / Parameters::fMagnification;
 }
@@ -21,7 +21,7 @@ void HEVert::DrawSelected()
 void HEVert::DrawSelectedInner()
 {
 	glPushMatrix();
-	glTranslated(m_vert.m_x, m_vert.m_y, m_vert.m_z);
+	Utility::Translated(m_vert);
 	glutWireCube(0.5);
 	glPopMatrix();
 }

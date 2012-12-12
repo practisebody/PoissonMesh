@@ -1,45 +1,79 @@
 #include "stdafx.h"
 #include "World.h"
 
-World theWorld(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), 
-			   0.5, 0.5, 0.5, 0.0, 0.0, 0.0, -0.5, -0.5, 1.0);
+World theWorld(0.5, 0.5, 0.5, 0.0, 0.0, 0.0, -0.5, -0.5, 1.0);
+
+#define PRINTINFOLEFTUPMOVENEXT glRasterPos2i(Parameters::nMargin, Parameters::nWindowHeight - ++nCount * Parameters::nMargin)
 
 void PrintfInfo()
 {
 	static int frame = 0, time, timebase = 0;
 	static char fps[1024];
-	static char info[1024];
+	char scale[1024];
 	
 	Material::SetMaterialWhite();
 	glMatrixMode(GL_PROJECTION);// 选择投影矩阵
 	glPushMatrix();// 保存原矩阵
 	glLoadIdentity();// 装入单位矩阵
-	glOrtho(0,480,0,480,-1,1);// 位置正投影
+	glOrtho(0, Parameters::nWindowWidth, 0, Parameters::nWindowHeight, -1, 1);// 位置正投影
 	glMatrixMode(GL_MODELVIEW);// 选择Modelview矩阵
 	glPushMatrix();// 保存原矩阵
 	glLoadIdentity();// 装入单位矩阵*/
 
+	// left up
+	int nCount = 0;
+	PRINTINFOLEFTUPMOVENEXT;
+	sprintf(scale, "Scale: %4.2ex", Parameters::fMagnification);
+	Utility::Print(scale);
+	PRINTINFOLEFTUPMOVENEXT;
+	Utility::Print("Display Mode: ");
+	Utility::Print((Parameters::bLine) ? ("Line") : ("Fill"));
+	PRINTINFOLEFTUPMOVENEXT;
+	Utility::Print("Modify Mode:");
+	Utility::Print((char*)Parameters::status);
+	PRINTINFOLEFTUPMOVENEXT;
+	Utility::Print(theWorld.m_objSelected.empty() == true ? "No object been selected" : "Object selected");
+	PRINTINFOLEFTUPMOVENEXT;
+	if (GetKeyState(VK_CONTROL) < 0)
+	{
+		
+		Utility::Print("Ctrl");
+		if (theWorld.m_objSelected.empty())
+		{
+			PRINTINFOLEFTUPMOVENEXT;
+			Utility::Print("Move Mode");
+		}
+		else
+		{
+			PRINTINFOLEFTUPMOVENEXT;
+			Utility::Print("Focus Rotation Mode");
+		}
+	}
+	if (GetKeyState(VK_SHIFT) < 0)
+	{
+		PRINTINFOLEFTUPMOVENEXT;
+		Utility::Print("Shift");
+	}
+	if (GetKeyState(VK_MENU) < 0)
+	{
+		PRINTINFOLEFTUPMOVENEXT;
+		Utility::Print("Alt");
+		PRINTINFOLEFTUPMOVENEXT;
+		Utility::Print("Scaling Mode");
+	}
+
+	// left down
 	frame++;
 	time = glutGet(GLUT_ELAPSED_TIME);
 	if (time - timebase > 1000)
 	{
-		sprintf(fps, "FPS:%4.2f", frame * 1000.0 / (time - timebase));
+		sprintf(fps, "FPS: %4.2f", frame * 1000.0 / (time - timebase));
 		timebase = time;		
 		frame = 0;
 	}
+	glRasterPos2i(Parameters::nMargin, Parameters::nMargin);
+	Utility::Print(fps);
 
-	glRasterPos2i(10, 10);
-	for (char *c = fps; *c != '\0'; c++)
-	{		
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-	}
-	sprintf(info, "Scale:%4.2ex  Display Mode:%s  Modify Mode:%s", Parameters::fMagnification,
-			(Parameters::bLine) ? ("Line") : ("Fill"), (char*)Parameters::status);
-	glRasterPos2i(10, 20);
-	for (char *c = info; *c != '\0'; c++)
-	{		
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-	}
 	glMatrixMode(GL_PROJECTION);// 选择投影矩阵
 	glPopMatrix();// 重置为原保存矩阵
 	glMatrixMode(GL_MODELVIEW);// 选择Modelview矩阵
@@ -94,44 +128,42 @@ void Init(int argc, char** argv)
 void OnKeyDown(unsigned char key, int x, int y)
 {
 	theWorld.OnKeyDown(key, glutGetModifiers());
-	glutPostRedisplay();
 }
  
 void OnSpecialKeyDown(int key, int x, int y)
 {
 	theWorld.OnSpecialKeyDown(key, glutGetModifiers());
-	glutPostRedisplay();
 }
 
 void OnMouseClick(int button, int state, int x, int y)
 {
-	theWorld.OnMouseClick(state, glutGetModifiers());
+	theWorld.OnMouseClick(button, state, glutGetModifiers());
 }
 
 void FixMouse(int& x, int& y)
 {
-	if (x < theWorld.m_WindowWidth / 4)
+	if (x < Parameters::nWindowWidth / 4)
 	{
-		theWorld.lastx += theWorld.m_WindowWidth / 4;
-		x += theWorld.m_WindowWidth / 4;
+		theWorld.lastx += Parameters::nWindowWidth / 4;
+		x += Parameters::nWindowWidth / 4;
 		SetCursorPos(x, y);
 	}
-	if (x > theWorld.m_WindowWidth / 4 * 3)
+	if (x > Parameters::nWindowWidth / 4 * 3)
 	{
-		theWorld.lastx -= theWorld.m_WindowWidth / 4;
-		x -= theWorld.m_WindowWidth / 4;
+		theWorld.lastx -= Parameters::nWindowWidth / 4;
+		x -= Parameters::nWindowWidth / 4;
 		SetCursorPos(x, y);
 	}
-	if (y < theWorld.m_WindowHeight / 4)
+	if (y < Parameters::nWindowHeight / 4)
 	{
-		theWorld.lasty += theWorld.m_WindowHeight / 4;
-		y += theWorld.m_WindowHeight / 4;
+		theWorld.lasty += Parameters::nWindowHeight / 4;
+		y += Parameters::nWindowHeight / 4;
 		SetCursorPos(x, y);
 	}
-	if (y > theWorld.m_WindowHeight / 4 * 3)
+	if (y > Parameters::nWindowHeight / 4 * 3)
 	{
-		theWorld.lasty -= theWorld.m_WindowHeight / 4;
-		y -= theWorld.m_WindowHeight / 4;
+		theWorld.lasty -= Parameters::nWindowHeight / 4;
+		y -= Parameters::nWindowHeight / 4;
 		SetCursorPos(x, y);
 	}
 }
@@ -139,46 +171,88 @@ void FixMouse(int& x, int& y)
 void OnMouseMove(int x, int y)
 {
 	FixMouse(x, y);
-	GLdouble HorizontalAngle = (GLdouble)(theWorld.lastx - x) / theWorld.m_WindowWidth * 2 * Parameters::PI;
-	GLdouble VerticalAngle = (GLdouble)(theWorld.lasty - y) / theWorld.m_WindowHeight * 2 * Parameters::PI;
-	Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
-	Vector vRight = vForward.OuterProduct(theWorld.GetUp());
-	Vector u = vRight.Normalize();
-	Vector v = vForward.Normalize();
-	Vector n = theWorld.GetUp();
-	GLdouble WorldtoView[3][4] =
+	// if alt not pressed
+	if (GetKeyState(VK_MENU) >= 0)
 	{
-		{ u[0], u[1], u[2], -(u * (Vector)theWorld.m_Eye) },
-		{ v[0], v[1], v[2], -(v * (Vector)theWorld.m_Eye) },
-		{ n[0], n[1], n[2], -(n * (Vector)theWorld.m_Eye) },
-	};
-	GLdouble HorizontalRotation[4][4] =
+		GLdouble HorizontalAngle = (GLdouble)(theWorld.lastx - x) / Parameters::nWindowWidth * 2 * Parameters::PI;
+		GLdouble VerticalAngle = (GLdouble)(theWorld.lasty - y) / Parameters::nWindowHeight * 2 * Parameters::PI;
+		Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
+		Vector vRight = vForward.OuterProduct(theWorld.GetUp());
+		Vector u = vRight.Normalize();
+		Vector v = vForward.Normalize();
+		Vector n = theWorld.GetUp();
+		GLdouble WorldtoView[4][4] =
+		{
+			{ u[0], u[1], u[2], -(u * (Vector)theWorld.m_Eye) },
+			{ v[0], v[1], v[2], -(v * (Vector)theWorld.m_Eye) },
+			{ n[0], n[1], n[2], -(n * (Vector)theWorld.m_Eye) },
+		};
+		GLdouble HorizontalRotation[4][4] =
+		{
+			{ cos(HorizontalAngle), -sin(HorizontalAngle), 0, 0 },
+			{ sin(HorizontalAngle), cos(HorizontalAngle), 0, 0 },
+			{ 0, 0, 1, 0 },
+		};
+		GLdouble VerticalRotation[4][4] =
+		{
+			{ 1, 0, 0, 0 },
+			{ 0, cos(VerticalAngle), -sin(VerticalAngle), 0 },
+			{ 0, sin(VerticalAngle), cos(VerticalAngle), 0 },
+		};
+		GLdouble ViewtoWorld[4][4] =
+		{
+			{ u[0], v[0], n[0], theWorld.m_Eye[0] },
+			{ u[1], v[1], n[1], theWorld.m_Eye[1] },
+			{ u[2], v[2], n[2], theWorld.m_Eye[2] },
+		};
+		if (GetKeyState(VK_CONTROL) < 0)
+		{
+			// no object been selected
+			if (theWorld.m_objSelected.empty())
+			{
+				theWorld.m_Eye -= (theWorld.lasty - y) / Parameters::fMaxDrawSize / vForward.Module() * vForward;
+				theWorld.m_Center -= (theWorld.lasty - y) / Parameters::fMaxDrawSize / vForward.Module() * vForward;
+				theWorld.m_Eye += (theWorld.lastx - x) / Parameters::fMaxDrawSize / vRight.Module() * vRight;
+				theWorld.m_Center += (theWorld.lastx - x) / Parameters::fMaxDrawSize / vRight.Module() * vRight;
+			}
+			// some object been selected
+			else
+			{
+				theWorld.m_Center = Parameters::fMagnification * theWorld.m_SelectSum / theWorld.m_vertSelected.size();
+				memset(WorldtoView, 0, sizeof(WorldtoView));
+				WorldtoView[0][0] = WorldtoView[1][1] = WorldtoView[2][2] = 1.0;
+				memset(ViewtoWorld, 0, sizeof(ViewtoWorld));
+				ViewtoWorld[0][0] = ViewtoWorld[1][1] = ViewtoWorld[2][2] = 1.0;
+				for (int i = 0; i < 3; ++i)
+					WorldtoView[i][3] = - (ViewtoWorld[i][3] = theWorld.m_Center[i]);
+				theWorld.m_Eye = Transform(ViewtoWorld, Transform(HorizontalRotation,
+					Transform(WorldtoView, theWorld.m_Eye)));
+				vForward = theWorld.m_Center - theWorld.m_Eye;
+				vRight = vForward.OuterProduct(theWorld.GetUp());
+				theWorld.m_Eye = Transform(ViewtoWorld, Transform(VerticalRotation,
+					Transform(WorldtoView, theWorld.m_Eye)));
+				vForward = theWorld.m_Center - theWorld.m_Eye;
+				theWorld.SetUp(-vForward.OuterProduct(vRight));
+			}
+		}
+		else
+		{
+			theWorld.m_Center = Transform(ViewtoWorld, Transform(HorizontalRotation,
+				Transform(WorldtoView, theWorld.m_Center)));
+			vForward = theWorld.m_Center - theWorld.m_Eye;
+			vRight = vForward.OuterProduct(theWorld.GetUp());
+			theWorld.m_Center = Transform(ViewtoWorld, Transform(VerticalRotation,
+				Transform(WorldtoView, theWorld.m_Center)));
+			vForward = theWorld.m_Center - theWorld.m_Eye;
+			theWorld.SetUp(-vForward.OuterProduct(vRight));
+		}
+	}
+	// if alt pressed
+	else
 	{
-		{ cos(HorizontalAngle), -sin(HorizontalAngle), 0, 0 },
-		{ sin(HorizontalAngle), cos(HorizontalAngle), 0, 0 },
-		{ 0, 0, 1, 0 },
-	};
-	GLdouble VerticalRotation[4][4] =
-	{
-		{ 1, 0, 0, 0 },
-		{ 0, cos(VerticalAngle), -sin(VerticalAngle), 0 },
-		{ 0, sin(VerticalAngle), cos(VerticalAngle), 0 },
-	};
-	GLdouble ViewtoWorld[4][4] =
-	{
-		{ u[0], v[0], n[0], theWorld.m_Eye[0] },
-		{ u[1], v[1], n[1], theWorld.m_Eye[1] },
-		{ u[2], v[2], n[2], theWorld.m_Eye[2] },
-	};
-	theWorld.m_Center = (Transform(ViewtoWorld, Transform(HorizontalRotation,
-		Transform(WorldtoView, theWorld.m_Center))));
-	vForward = theWorld.m_Center - theWorld.m_Eye;
-	vRight = vForward.OuterProduct(theWorld.GetUp());
-	theWorld.m_Center = (Transform(ViewtoWorld, Transform(VerticalRotation,
-		Transform(WorldtoView, theWorld.m_Center))));
-	vForward = theWorld.m_Center - theWorld.m_Eye;
-	theWorld.SetUp(-vForward.OuterProduct(vRight));
-	glutPostRedisplay();
+		double scale = ((double)theWorld.lasty - y) / 1000;
+		Parameters::fMagnification *= (scale <= 0 ? exp(scale) : log(scale + 1) + 1);
+	}
 	theWorld.lastx = x;
 	theWorld.lasty = y;
 }
@@ -187,12 +261,15 @@ void OnMouseDrag(int x, int y)
 {
 	FixMouse(x, y);
 	Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
-	if (theWorld.m_objSelected.empty())
+	if (theWorld.m_objSelected.empty() == true)
+	{
 		;
+	}
 	else if (abs(x - theWorld.lastx) < 3 && abs(y - theWorld.lasty) < 3)
 		return;
 	else
 	{
+		// some objects selected
 		Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
 		Vector vRight = vForward.OuterProduct(theWorld.GetUp());
 		Vector u = vRight.Normalize();
@@ -241,11 +318,16 @@ void OnDraw()
 	glFlush();
 }
 
+void OnIdle()
+{
+	glutPostRedisplay();
+}
+
 void main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_DEPTH | GLUT_RGBA);
-	glutInitWindowSize(theWorld.m_WindowWidth, theWorld.m_WindowHeight);
+	glutInitWindowSize(Parameters::nWindowWidth, Parameters::nWindowHeight);
 	glutCreateWindow("Project1");
 
 	Init(argc, argv);
@@ -255,5 +337,6 @@ void main(int argc, char** argv)
 	glutMotionFunc(OnMouseDrag);
 	glutPassiveMotionFunc(OnMouseMove);
 	glutDisplayFunc(OnDraw);
+	glutIdleFunc(OnIdle);
 	glutMainLoop();
 }

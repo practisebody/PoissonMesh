@@ -3,11 +3,10 @@
 #include "HalfEdge.h"
 #include <algorithm>
 
-World::World(int windowwidth, int windowheight, GLdouble eyex, GLdouble eyey, GLdouble eyez,
-	GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz)
-	: m_WindowWidth(windowwidth), m_WindowHeight(windowheight),	m_Eye(eyex, eyey, eyez),
-	m_Center(centerx, centery, centerz), m_Up(upx, upy, upz), m_DragDir(DIR_NULL), 
-	lastx(m_WindowWidth / 2), lasty(m_WindowHeight / 2)
+World::World(GLdouble eyex, GLdouble eyey, GLdouble eyez, GLdouble centerx, GLdouble centery, GLdouble centerz,
+			 GLdouble upx, GLdouble upy, GLdouble upz)
+	: m_Eye(eyex, eyey, eyez), m_Center(centerx, centery, centerz), m_Up(upx, upy, upz), m_DragDir(DIR_NULL), 
+	lastx(Parameters::nWindowWidth / 2), lasty(Parameters::nWindowHeight / 2)
 {
 	m_Up.Normalize();
 }
@@ -65,7 +64,7 @@ void World::OnOrient()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	gluPerspective(45.0, (GLdouble)m_WindowWidth / m_WindowHeight, Parameters::zNear, Parameters::zFar);
+	gluPerspective(45.0, (GLdouble)Parameters::nWindowWidth / Parameters::nWindowHeight, Parameters::zNear, Parameters::zFar);
 	gluLookAt(m_Eye[0], m_Eye[1], m_Eye[2], m_Center[0], m_Center[1], m_Center[2],
 		m_Up[0], m_Up[1], m_Up[2]);
 	
@@ -132,7 +131,7 @@ void World::OnDraw()
 	Material::SetMaterialWhite();
 	if (m_objSelected.size() <= Parameters::nMaxDrawNumber || _scale.Module() <= Parameters::fMaxDrawSize)
 	{
-		if (!m_objSelected.empty())
+		if (m_objSelected.empty() == false)
 			for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
 				(*iter)->DrawSelected();
 	}
@@ -219,7 +218,7 @@ HEObject* World::GetNearestObject()
 void World::RecalculateSum()
 {
 	new (&m_SelectSum) Point(0.0, 0.0, 0.0);
-	if (!m_vertSelected.empty())
+	if (m_vertSelected.empty() == false)
 	{
 		m_vSelectedMax = Utility::minPoint;
 		m_vSelectedMin = Utility::maxPoint;
@@ -233,59 +232,78 @@ void World::RecalculateSum()
 	}
 }
 
-void World::OnMouseClick(int state, int modifiers)
+void World::OnMouseClick(int button, int state, int modifiers)
 {
 	vector<HEVert*> verts;
 	vector<HEVert*>::iterator vertIter;
 	HEObject* obj = GetNearestObject();
-	switch (state)
+	switch (button)
 	{
-	case GLUT_DOWN:
-		m_DragDir = DIR_NULL;
-		break;
-	case GLUT_UP:
-		// if it's a selection
-		if (m_DragDir == DIR_NULL)
+	case GLUT_LEFT_BUTTON:
+		switch (state)
 		{
-			// If Ctrl Not Down
-			if ((modifiers & GLUT_ACTIVE_CTRL) == 0)
+		case GLUT_DOWN:
+			m_DragDir = DIR_NULL;
+			break;
+		case GLUT_UP:
+			// if it's a selection
+			if (m_DragDir == DIR_NULL)
 			{
-				m_objSelected.clear();
-				m_vertSelected.clear();
-			}
-			// If Alt Not Down
-			if ((modifiers & GLUT_ACTIVE_ALT) == 0)
-			{
-				if (obj != NULL)
+				// If Ctrl Not Down
+				if ((modifiers & GLUT_ACTIVE_CTRL) == 0)
 				{
-					set<HEObject*>::iterator iter = m_objSelected.find(obj);
-					// if not selected
-					if (iter == m_objSelected.end())
+					m_objSelected.clear();
+					m_vertSelected.clear();
+				}
+				// If Alt Not Down
+				if ((modifiers & GLUT_ACTIVE_ALT) == 0)
+				{
+					if (obj != NULL)
 					{
-						m_objSelected.insert(obj);
-						obj->ToVerts(verts);
-						for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+						set<HEObject*>::iterator iter = m_objSelected.find(obj);
+						// if not selected
+						if (iter == m_objSelected.end())
 						{
-							m_vertSelected.insert(*vertIter);
-						}
-					}
-					// if selected
-					else
-					{
-						m_objSelected.erase(iter);
-						m_vertSelected.clear();
-						for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
-						{
-							(*iter)->ToVerts(verts);
+							m_objSelected.insert(obj);
+							obj->ToVerts(verts);
 							for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
 							{
 								m_vertSelected.insert(*vertIter);
 							}
 						}
+						// if selected
+						else
+						{
+							m_objSelected.erase(iter);
+							m_vertSelected.clear();
+							for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+							{
+								(*iter)->ToVerts(verts);
+								for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+								{
+									m_vertSelected.insert(*vertIter);
+								}
+							}
+						}
 					}
 				}
+				RecalculateSum();
 			}
-			RecalculateSum();
+			break;
+		default:
+			break;
+		}
+		break;
+	case GLUT_RIGHT_BUTTON:
+		switch (state)
+		{
+		case GLUT_DOWN:
+			Parameters::status = ((int)Parameters::status + 1) % 3;
+			break;
+		case GLUT_UP:
+			break;
+		default:
+			break;
 		}
 		break;
 	default:
@@ -370,22 +388,22 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		break;
 	case 27:
 		exit(0);
-	case 'w':
-		m_Eye += 0.01 / vForward.Module() * vForward;
-		m_Center += 0.01 / vForward.Module() * vForward;
-		break;
-	case 's':
-		m_Eye -= 0.01 / vForward.Module() * vForward;
-		m_Center -= 0.01 / vForward.Module() * vForward;
-		break;
-	case 'a':
-		m_Eye -= 0.01 / vRight.Module() * vRight;
-		m_Center -= 0.01 / vRight.Module() * vRight;
-		break;
-	case 'd':
-		m_Eye += 0.01 / vRight.Module() * vRight;
-		m_Center += 0.01 / vRight.Module() * vRight;
-		break;
+	//case 'w':
+	//	m_Eye += 0.01 / vForward.Module() * vForward;
+	//	m_Center += 0.01 / vForward.Module() * vForward;
+	//	break;
+	//case 's':
+	//	m_Eye -= 0.01 / vForward.Module() * vForward;
+	//	m_Center -= 0.01 / vForward.Module() * vForward;
+	//	break;
+	//case 'a':
+	//	m_Eye -= 0.01 / vRight.Module() * vRight;
+	//	m_Center -= 0.01 / vRight.Module() * vRight;
+	//	break;
+	//case 'd':
+	//	m_Eye += 0.01 / vRight.Module() * vRight;
+	//	m_Center += 0.01 / vRight.Module() * vRight;
+	//	break;
 	//case 'g':
 	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
 	//	break;
@@ -433,8 +451,8 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		m_vertSelected.clear();
 		DeleteObjects(deletedObjects);
 		break;
-	case 'x':
-		Parameters::status = ((int)Parameters::status + 1) % 3;
+	//case 'x':
+	//	Parameters::status = ((int)Parameters::status + 1) % 3;
 	default:
 		break;
 	}
@@ -443,7 +461,7 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 
 void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 {
-	GLdouble angle = scale / (m_WindowWidth / 40) * 2 * Parameters::PI;
+	GLdouble angle = scale / (Parameters::nWindowWidth / 40) * 2 * Parameters::PI;
 	Point pCenter(m_SelectSum / m_vertSelected.size());
 	Vector bases[3] =
 	{

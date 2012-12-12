@@ -27,4 +27,7 @@ public:
 	static vector<HEFace*>::size_type nMaxDrawNumber;
 	static Point m_vMin, m_vMax;
 	static GLfloat fMaxDrawSize;
+	static const int nWindowHeight;
+	static const int nWindowWidth;
+	static const int nMargin;
 };

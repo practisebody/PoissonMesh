@@ -11,14 +11,11 @@ unsigned char *LoadBitmapFile(const char *filename, BITMAPINFOHEADER *bitmapInfo
 
 	// 以“二进制+读”模式打开文件filename 
 	filePtr = fopen(filename, "rb"); 
-	if (filePtr == NULL) return NULL;
+	MYASSERT(filePtr != NULL);
 	// 读入bitmap文件图
 	fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, filePtr); 
 	// 验证是否为bitmap文件
-	if (bitmapFileHeader.bfType != 0x4D42) {
-		fprintf(stderr, "Error in LoadBitmapFile: the file is not a bitmap file\n");
-		return NULL;
-	}
+	MYASSERT(bitmapFileHeader.bfType == 0x4D42);
 
 	// 读入bitmap信息头
 	fread(bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, filePtr); 
@@ -27,18 +24,12 @@ unsigned char *LoadBitmapFile(const char *filename, BITMAPINFOHEADER *bitmapInfo
 	// 为装载图像数据创建足够的内存
 	bitmapImage = new unsigned char[bitmapInfoHeader->biSizeImage]; 
 	// 验证内存是否创建成功
-	if (!bitmapImage) {
-		fprintf(stderr, "Error in LoadBitmapFile: memory error\n");
-		return NULL;
-	}
+	MYASSERT(bitmapImage);
 
 	// 读入bitmap图像数据
 	fread(bitmapImage, 1, bitmapInfoHeader->biSizeImage, filePtr); 
 	// 确认读入成功
-	if (bitmapImage == NULL) {
-		fprintf(stderr, "Error in LoadBitmapFile: memory error\n");
-		return NULL;
-	}
+	MYASSERT(bitmapImage == NULL);
 
 	//由于bitmap中保存的格式是BGR，下面交换R和B的值，得到RGB格式
 	for (imageIdx = 0; imageIdx < bitmapInfoHeader->biSizeImage; imageIdx+=3) { 

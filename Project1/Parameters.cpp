@@ -19,6 +19,9 @@ vector<HEFace*>::size_type Parameters::nMaxDrawNumber;
 Point Parameters::m_vMin = Utility::maxPoint;
 Point Parameters::m_vMax = Utility::minPoint;
 GLfloat Parameters::fMaxDrawSize;
+const int Parameters::nWindowHeight = GetSystemMetrics(SM_CYSCREEN);
+const int Parameters::nWindowWidth = GetSystemMetrics(SM_CXSCREEN);
+const int Parameters::nMargin = 30;
 
 GLfloat Parameters::fRevisedMaginification()
 {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "stdafx.h"
-
 #include "Direction.h"
 #include "States.h"
 #include "Parameters.h"
@@ -20,15 +19,19 @@ public:
 	static void DrawScaleAxis(const Point& here);
 	static void DrawRotateAxis(const Point& here);
 	static void DrawCube(const Point& leftdown, const Vector& scale);
+
 	static void Translated(const _Triple& triple);
 	static void Scaled(const _Triple& triple);
+
 	template<typename T>
-	static void SetMin(T& a, const T& b);
+	inline static void SetMin(T& a, const T& b);
 	template<typename T>
-	static void SetMax(T& a, const T& b);
+	inline static void SetMax(T& a, const T& b);
 	static const Point minPoint, maxPoint;
 	static void SetMin(Point& a, const Point& b);
 	static void SetMax(Point& a, const Point& b);
+
+	static void Print(char* string);
 };
 
 template<typename T>

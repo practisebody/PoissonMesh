@@ -7,7 +7,7 @@
 class World
 {
 public:
-	World(int windowwidth, int windowheight, GLdouble eyex, GLdouble eyey, GLdouble eyez,
+	World(GLdouble eyex, GLdouble eyey, GLdouble eyez,
 		GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz);
 	~World();
 	void Init(const char* name);
@@ -20,13 +20,11 @@ public:
 	void OnOrient();
 	void OnDraw();
 	void RecalculateSum();
-	void OnMouseClick(int state, int modifiers);
+	void OnMouseClick(int button, int state, int modifiers);
 	void OnSpecialKeyDown(int key, int modifiers);
 	void OnKeyDown(unsigned char key, int modifiers);
 	void OnMouseDrag(GLdouble scale, Direction dir, Direction mindir);
 public:
-	const int m_WindowWidth;
-	const int m_WindowHeight;
 	Point m_Eye, m_Center;
 	Point m_SelectSum;
 	set<HEObject*> m_objSelected;

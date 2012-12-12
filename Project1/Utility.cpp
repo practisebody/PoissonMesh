@@ -107,3 +107,11 @@ void Utility::SetMax(Point& a, const Point& b)
 	for (int i = 0; i < 3; ++i)
 		SetMax(a[i], b[i]);
 }
+
+void Utility::Print(char* string)
+{
+	for (char* c = string; *c != '\0'; c++)
+	{		
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+	}
+}

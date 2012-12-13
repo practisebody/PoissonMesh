@@ -9,6 +9,7 @@ const GLdouble Parameters::zNear = 0.01;
 const GLdouble Parameters::zFar = 1000;
 GLfloat Parameters::fMagnification = 1.0f;
 bool Parameters::bLine = false;
+bool Parameters::bHiddenFaceRemoval = true;
 GLfloat& Parameters::fIntersectRadius = fMagnification;
 States Parameters::status = States::TRANSLATE;
 const GLfloat Parameters::fNormalLineWidth = 1.0f;
@@ -22,6 +23,7 @@ GLfloat Parameters::fMaxDrawSize;
 const int Parameters::nWindowHeight = GetSystemMetrics(SM_CYSCREEN);
 const int Parameters::nWindowWidth = GetSystemMetrics(SM_CXSCREEN);
 const int Parameters::nMargin = 30;
+int Parameters::nCount;
 
 GLfloat Parameters::fRevisedMaginification()
 {

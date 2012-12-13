@@ -17,6 +17,7 @@ public:
 	static const GLdouble zFar;
 	static GLfloat fMagnification;
 	static bool bLine;
+	static bool bHiddenFaceRemoval;
 	static GLfloat& fIntersectRadius;
 	static GLfloat fRevisedMaginification();
 	static States status;
@@ -30,4 +31,6 @@ public:
 	static const int nWindowHeight;
 	static const int nWindowWidth;
 	static const int nMargin;
+	// for left up corner only
+	static int nCount;
 };

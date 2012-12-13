@@ -31,7 +31,12 @@ public:
 	static void SetMin(Point& a, const Point& b);
 	static void SetMax(Point& a, const Point& b);
 
-	static void Print(char* string);
+	static void Print(const char* string);
+	static void InitHelp();
+	static void PrintHelp(bool bSelect, bool bShift, bool bCtrl, bool bAlt);
+
+private:
+	static map<int, string> HelpInfo;
 };
 
 template<typename T>

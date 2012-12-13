@@ -20,3 +20,9 @@
 #define ACCESSDENYDOUBLE { return 0.0; }
 #define ACCESSDENYPOINT { return Point(); }
 #define ACCESSDENYVECTOR { return Vector(); }
+
+#define PRINTINFOLEFTUPMOVENEXT glRasterPos2i(Parameters::nMargin, Parameters::nWindowHeight - ++Parameters::nCount * Parameters::nMargin)
+#define INITPRINTINFOLEFTUP Parameters::nCount = 0; PRINTINFOLEFTUPMOVENEXT
+
+#define ANYOBJECTSELECTED 8
+#define NOT(_bool) 0

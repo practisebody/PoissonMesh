@@ -72,7 +72,7 @@ void World::OnOrient()
 	glLoadIdentity();
 }
 
-void World::OnDraw()
+void World::OnDraw(GLenum mode)
 {
 	Vector vForward = (m_Center - m_Eye).Normalize();
 	Vector vRight = vForward.OuterProduct(GetUp());
@@ -109,6 +109,8 @@ void World::OnDraw()
 	vector<HEFace*> TransparentFaces;
 	for (vector<HEFace*>::size_type nIndex = 0; nIndex < m_Faces.size(); ++ nIndex)
 	{
+		if (mode == GL_SELECT)
+			glLoadName(nIndex);
 		if (m_Faces[nIndex] != NULL && m_Faces[nIndex]->m_mtl != NULL)
 		{
 			if (m_Faces[nIndex]->m_mtl->IsTransparent() == false)
@@ -215,7 +217,7 @@ HEObject* World::GetNearestObject()
 	return NULL;
 }
 
-void World::RecalculateSum()
+void World::ReCalculateSum()
 {
 	new (&m_SelectSum) Point(0.0, 0.0, 0.0);
 	if (m_vertSelected.empty() == false)
@@ -232,9 +234,22 @@ void World::RecalculateSum()
 	}
 }
 
-void World::OnMouseClick(int button, int state, int modifiers)
+void World::FixingSelectedVetices()
 {
 	vector<HEVert*> verts;
+	m_vertSelected.clear();
+	for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+	{
+		(*iter)->ToVerts(verts);
+		for (vector<HEVert*>::iterator vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+		{
+			m_vertSelected.insert(*vertIter);
+		}
+	}
+}
+
+void World::OnMouseClick(int button, int state, int modifiers)
+{
 	vector<HEVert*>::iterator vertIter;
 	HEObject* obj = GetNearestObject();
 	switch (button)
@@ -253,7 +268,7 @@ void World::OnMouseClick(int button, int state, int modifiers)
 				if ((modifiers & GLUT_ACTIVE_CTRL) == 0)
 				{
 					m_objSelected.clear();
-					m_vertSelected.clear();
+					//m_vertSelected.clear();
 				}
 				// If Alt Not Down
 				if ((modifiers & GLUT_ACTIVE_ALT) == 0)
@@ -265,30 +280,32 @@ void World::OnMouseClick(int button, int state, int modifiers)
 						if (iter == m_objSelected.end())
 						{
 							m_objSelected.insert(obj);
-							obj->ToVerts(verts);
-							for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
-							{
-								m_vertSelected.insert(*vertIter);
-							}
+						//	obj->ToVerts(verts);
+						//	for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+						//	{
+						//		m_vertSelected.insert(*vertIter);
+						//	}
 						}
 						// if selected
 						else
 						{
 							m_objSelected.erase(iter);
-							m_vertSelected.clear();
-							for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
-							{
-								(*iter)->ToVerts(verts);
-								for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
-								{
-									m_vertSelected.insert(*vertIter);
-								}
-							}
+							//m_vertSelected.clear();
+							//for (iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
+							//{
+							//	(*iter)->ToVerts(verts);
+							//	for (vertIter = verts.begin(); vertIter != verts.end(); ++vertIter)
+							//	{
+							//		m_vertSelected.insert(*vertIter);
+							//	}
+							//}
 						}
 					}
 				}
-				RecalculateSum();
 			}
+			FixingSelectedVetices();
+			ReCalculateSum();
+			m_DragDir = DIR_NULL;
 			break;
 		default:
 			break;
@@ -320,13 +337,31 @@ void World::OnSpecialKeyDown(int key, int modifiers)
 	{
 	case GLUT_KEY_F3:
 		Parameters::bLine = !Parameters::bLine;
+		if (Parameters::bLine == true)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		break;
-	case GLUT_KEY_UP:
-		Parameters::fMagnification *= 1.1;
+	case GLUT_KEY_F4:
+		// F4
+		if ((modifiers & GLUT_ACTIVE_ALT) == 0)
+		{
+			Parameters::bHiddenFaceRemoval = !Parameters::bHiddenFaceRemoval;
+			if (Parameters::bHiddenFaceRemoval == true)
+				glEnable(GL_CULL_FACE);
+			else
+				glDisable(GL_CULL_FACE);
+		}
+		// alt + F4
+		else
+			exit(0);
 		break;
-	case GLUT_KEY_DOWN:
-		Parameters::fMagnification *= 0.9;
-		break;
+	//case GLUT_KEY_UP:
+	//	Parameters::fMagnification *= 1.1;
+	//	break;
+	//case GLUT_KEY_DOWN:
+	//	Parameters::fMagnification *= 0.9;
+	//	break;
 	case GLUT_KEY_INSERT:
 		m_vertSelected.clear();
 		for (set<HEObject*>::iterator iter = m_objSelected.begin(); iter != m_objSelected.end(); ++iter)
@@ -359,7 +394,7 @@ void World::OnSpecialKeyDown(int key, int modifiers)
 		m_objSelected.clear();
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
 			m_objSelected.insert(*iter);
-		RecalculateSum();
+		ReCalculateSum();
 		break;
 	default:
 		break;
@@ -373,7 +408,7 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 	set<HEObject*> deletedObjects;
 	switch (key)
 	{
-	case 1:
+	case 'a' - 'a' + 1:
 		if ((modifiers & GLUT_ACTIVE_CTRL) != 0)
 		{
 			for (vector<HEFace*>::iterator iter = m_Faces.begin(); iter != m_Faces.end(); ++iter)
@@ -384,10 +419,15 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 			for (vector<HEVert*>::iterator iter = ++m_Vertices.begin(); iter != m_Vertices.end(); ++iter)
 				m_vertSelected.insert(*iter);
 		}
-		RecalculateSum();
+		ReCalculateSum();
 		break;
+	case 'q' - 'a' + 1:
+		if ((modifiers & GLUT_ACTIVE_CTRL) != 0)
+			exit(0);
 	case 27:
-		exit(0);
+		m_objSelected.clear();
+		m_vertSelected.clear();
+		break;
 	//case 'w':
 	//	m_Eye += 0.01 / vForward.Module() * vForward;
 	//	m_Center += 0.01 / vForward.Module() * vForward;
@@ -456,7 +496,7 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 	default:
 		break;
 	}
-	RecalculateSum();
+	ReCalculateSum();
 }
 
 void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
@@ -520,7 +560,12 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 		MYASSERT(false);
 		break;
 	}
-	RecalculateSum();
+	ReCalculateSum();
+}
+
+int World::SizeOfFaces()
+{
+	return m_Faces.size();
 }
 
 void World::DeleteObjects(set<HEObject*>& deletedObjects)

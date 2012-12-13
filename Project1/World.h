@@ -18,12 +18,14 @@ public:
 	void AddFace(HEFace* const face);
 	void AppendFaces(vector<HEFace*>& faces);
 	void OnOrient();
-	void OnDraw();
-	void RecalculateSum();
+	void OnDraw(GLenum mode = GL_RENDER);
+	void ReCalculateSum();
+	void FixingSelectedVetices();
 	void OnMouseClick(int button, int state, int modifiers);
 	void OnSpecialKeyDown(int key, int modifiers);
 	void OnKeyDown(unsigned char key, int modifiers);
 	void OnMouseDrag(GLdouble scale, Direction dir, Direction mindir);
+	int SizeOfFaces();
 public:
 	Point m_Eye, m_Center;
 	Point m_SelectSum;
@@ -31,12 +33,14 @@ public:
 	set<HEVert*> m_vertSelected;
 	Point m_vSelectedMax, m_vSelectedMin;
 	int lastx, lasty;
+	int dragx, dragy;
 private:
 	void DeleteObjects(set<HEObject*>& deletedObjects);
 	HEObject* GetNearestObject();
 	Vector m_Up;
 	map<string, Material*> m_Materials;
 	vector<HEVert*> m_Vertices;   // read from obj, start from 1
+public:
 	vector<HEFace*> m_Faces;
 	vector<Vector*> m_NormVectors;
 	vector<Point*> m_TextPoints;  // read from obj, start from 1

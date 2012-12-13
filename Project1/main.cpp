@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "World.h"
+#include "HalfEdge.h"
 
 World theWorld(0.5, 0.5, 0.5, 0.0, 0.0, 0.0, -0.5, -0.5, 1.0);
-
-#define PRINTINFOLEFTUPMOVENEXT glRasterPos2i(Parameters::nMargin, Parameters::nWindowHeight - ++nCount * Parameters::nMargin)
 
 void PrintfInfo()
 {
@@ -21,13 +20,15 @@ void PrintfInfo()
 	glLoadIdentity();// 装入单位矩阵*/
 
 	// left up
-	int nCount = 0;
-	PRINTINFOLEFTUPMOVENEXT;
-	sprintf(scale, "Scale: %4.2ex", Parameters::fMagnification);
+	INITPRINTINFOLEFTUP;
+	sprintf(scale, "Scale: %.3e x", Parameters::fMagnification);
 	Utility::Print(scale);
 	PRINTINFOLEFTUPMOVENEXT;
 	Utility::Print("Display Mode: ");
 	Utility::Print((Parameters::bLine) ? ("Line") : ("Fill"));
+	PRINTINFOLEFTUPMOVENEXT;
+	Utility::Print("Hidden Face Removal: ");
+	Utility::Print((Parameters::bHiddenFaceRemoval) ? ("On") : ("Off"));
 	PRINTINFOLEFTUPMOVENEXT;
 	Utility::Print("Modify Mode:");
 	Utility::Print((char*)Parameters::status);
@@ -36,31 +37,18 @@ void PrintfInfo()
 	PRINTINFOLEFTUPMOVENEXT;
 	if (GetKeyState(VK_CONTROL) < 0)
 	{
-		
-		Utility::Print("Ctrl");
-		if (theWorld.m_objSelected.empty())
-		{
-			PRINTINFOLEFTUPMOVENEXT;
-			Utility::Print("Move Mode");
-		}
-		else
-		{
-			PRINTINFOLEFTUPMOVENEXT;
-			Utility::Print("Focus Rotation Mode");
-		}
+		Utility::Print("Ctrl ");
 	}
 	if (GetKeyState(VK_SHIFT) < 0)
 	{
-		PRINTINFOLEFTUPMOVENEXT;
-		Utility::Print("Shift");
+		Utility::Print("Shift ");
 	}
 	if (GetKeyState(VK_MENU) < 0)
 	{
-		PRINTINFOLEFTUPMOVENEXT;
-		Utility::Print("Alt");
-		PRINTINFOLEFTUPMOVENEXT;
-		Utility::Print("Scaling Mode");
+		Utility::Print("Alt ");
 	}
+	PRINTINFOLEFTUPMOVENEXT;
+	Utility::PrintHelp(theWorld.m_objSelected.empty() == false, GetKeyState(VK_SHIFT) < 0, GetKeyState(VK_CONTROL) < 0, GetKeyState(VK_MENU) < 0);
 
 	// left down
 	frame++;
@@ -105,10 +93,6 @@ void Init(int argc, char** argv)
 	// Texture
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	// Color(Material)
-	// glEnable(GL_COLOR_MATERIAL);
-	// glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
 	// Blend(Alpha)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -123,6 +107,26 @@ void Init(int argc, char** argv)
 		theWorld.Init("dog.obj");
 	else
 		theWorld.Init(argv[1]);
+
+	// Help
+	Utility::InitHelp();
+}
+
+void OnDraw()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Polygon
+	if (Parameters::bLine == true)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	theWorld.OnOrient();
+	theWorld.OnDraw();
+	PrintfInfo();
+
+	glFlush();
 }
 
 void OnKeyDown(unsigned char key, int x, int y)
@@ -137,6 +141,11 @@ void OnSpecialKeyDown(int key, int x, int y)
 
 void OnMouseClick(int button, int state, int x, int y)
 {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		theWorld.dragx = x;
+		theWorld.dragy = y;
+	}
 	theWorld.OnMouseClick(button, state, glutGetModifiers());
 }
 
@@ -145,24 +154,28 @@ void FixMouse(int& x, int& y)
 	if (x < Parameters::nWindowWidth / 4)
 	{
 		theWorld.lastx += Parameters::nWindowWidth / 4;
+		theWorld.dragx += Parameters::nWindowWidth / 4;
 		x += Parameters::nWindowWidth / 4;
 		SetCursorPos(x, y);
 	}
 	if (x > Parameters::nWindowWidth / 4 * 3)
 	{
 		theWorld.lastx -= Parameters::nWindowWidth / 4;
+		theWorld.dragx -= Parameters::nWindowWidth / 4;
 		x -= Parameters::nWindowWidth / 4;
 		SetCursorPos(x, y);
 	}
 	if (y < Parameters::nWindowHeight / 4)
 	{
 		theWorld.lasty += Parameters::nWindowHeight / 4;
+		theWorld.dragy += Parameters::nWindowWidth / 4;
 		y += Parameters::nWindowHeight / 4;
 		SetCursorPos(x, y);
 	}
 	if (y > Parameters::nWindowHeight / 4 * 3)
 	{
 		theWorld.lasty -= Parameters::nWindowHeight / 4;
+		theWorld.dragy -= Parameters::nWindowWidth / 4;
 		y -= Parameters::nWindowHeight / 4;
 		SetCursorPos(x, y);
 	}
@@ -171,8 +184,8 @@ void FixMouse(int& x, int& y)
 void OnMouseMove(int x, int y)
 {
 	FixMouse(x, y);
-	// if alt not pressed
-	if (GetKeyState(VK_MENU) >= 0)
+	// if ctrl not pressed
+	if (GetKeyState(VK_CONTROL) >= 0 || GetKeyState(VK_MENU) >= 0)
 	{
 		GLdouble HorizontalAngle = (GLdouble)(theWorld.lastx - x) / Parameters::nWindowWidth * 2 * Parameters::PI;
 		GLdouble VerticalAngle = (GLdouble)(theWorld.lasty - y) / Parameters::nWindowHeight * 2 * Parameters::PI;
@@ -205,7 +218,7 @@ void OnMouseMove(int x, int y)
 			{ u[1], v[1], n[1], theWorld.m_Eye[1] },
 			{ u[2], v[2], n[2], theWorld.m_Eye[2] },
 		};
-		if (GetKeyState(VK_CONTROL) < 0)
+		if (GetKeyState(VK_MENU) < 0)
 		{
 			// no object been selected
 			if (theWorld.m_objSelected.empty())
@@ -247,7 +260,7 @@ void OnMouseMove(int x, int y)
 			theWorld.SetUp(-vForward.OuterProduct(vRight));
 		}
 	}
-	// if alt pressed
+	// if ctrl + alt pressed
 	else
 	{
 		double scale = ((double)theWorld.lasty - y) / 1000;
@@ -261,61 +274,90 @@ void OnMouseDrag(int x, int y)
 {
 	FixMouse(x, y);
 	Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
-	if (theWorld.m_objSelected.empty() == true)
+	if (abs(x - theWorld.lastx) > 3 || abs(y - theWorld.lasty) > 3)
 	{
-		;
+		if (theWorld.m_objSelected.empty() == true || theWorld.m_DragDir == DIR_FLAG)
+		{
+			GLuint* pickBuffer = new GLuint[theWorld.SizeOfFaces() * 4 + 16];
+			theWorld.m_objSelected.clear();
+			GLint nPicks, vp[4];
+
+			glSelectBuffer(theWorld.SizeOfFaces() + 1, pickBuffer); //设置选择缓冲区
+			glRenderMode(GL_SELECT); //激活选择模式
+			glInitNames();   //初始化名字堆栈
+
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+			glLoadIdentity();
+
+			glGetIntegerv(GL_VIEWPORT, vp);
+			gluPickMatrix((Parameters::nWindowWidth + (x - theWorld.dragx)) / 2,
+				(Parameters::nWindowHeight - (y - theWorld.dragy)) / 2,
+				abs(x - theWorld.dragx),
+				abs(y - theWorld.dragy), vp);
+			gluPerspective(45.0, (GLdouble)Parameters::nWindowWidth / Parameters::nWindowHeight, Parameters::zNear, Parameters::zFar);
+			glMatrixMode(GL_MODELVIEW);
+			gluLookAt(theWorld.m_Eye[0], theWorld.m_Eye[1], theWorld.m_Eye[2],
+				theWorld.m_Center[0], theWorld.m_Center[1], theWorld.m_Center[2],
+				theWorld.GetUp()[0], theWorld.GetUp()[1], theWorld.GetUp()[2]);
+
+			//theWorld.OnOrient();
+			glPushName(-1);
+			theWorld.OnDraw(GL_SELECT);
+			glPopName();
+
+			//恢复投影变换
+			glPopMatrix();
+
+			//获得选择集并输出
+			nPicks = glRenderMode(GL_RENDER);
+			HEFace* face;
+			for(GLint i = 1; i < nPicks; ++i)
+			{
+				face = theWorld.m_Faces[pickBuffer[4 * i + 3]];
+				if (dynamic_cast<HENullFace*>(face) == NULL)
+					theWorld.m_objSelected.insert(dynamic_cast<HEObject*>(face));
+			}
+			theWorld.m_DragDir = DIR_FLAG;
+			theWorld.lastx = x;
+			theWorld.lasty = y;
+		}
+		else
+		{
+			// some objects selected
+			Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
+			Vector vRight = vForward.OuterProduct(theWorld.GetUp());
+			Vector u = vRight.Normalize();
+			Vector v = vForward.Normalize();
+			Vector n = theWorld.GetUp();
+			GLdouble xu = u[0] - (u * (Vector)theWorld.m_Eye), xn = n[0] - (n * (Vector)theWorld.m_Eye);
+			GLdouble yu = u[1] - (u * (Vector)theWorld.m_Eye), yn = n[1] - (n * (Vector)theWorld.m_Eye);
+			GLdouble zu = u[2] - (u * (Vector)theWorld.m_Eye), zn = n[2] - (n * (Vector)theWorld.m_Eye);
+			GLdouble cursoru = x - theWorld.lastx, cursorn = theWorld.lasty - y;
+			GLdouble xscale = (xu * cursoru + xn * cursorn) / sqrt(xu * xu + xn * xn);
+			GLdouble yscale = (yu * cursoru + yn * cursorn) / sqrt(yu * yu + yn * yn);
+			GLdouble zscale = (zu * cursoru + zn * cursorn) / sqrt(zu * zu + zn * zn);
+			if (fabs(xscale) > fabs(yscale) && fabs(xscale) > fabs(zscale))
+				if (fabs(yscale) > fabs(zscale))
+					theWorld.OnMouseDrag(xscale, DIR_X, DIR_Z);
+				else
+					theWorld.OnMouseDrag(xscale, DIR_X, DIR_Y);
+			if (fabs(yscale) > fabs(xscale) && fabs(yscale) > fabs(zscale))
+				if (fabs(xscale) > fabs(zscale))
+					theWorld.OnMouseDrag(yscale, DIR_Y, DIR_Z);
+				else
+					theWorld.OnMouseDrag(yscale, DIR_Y, DIR_X);
+			if (fabs(zscale) > fabs(xscale) && fabs(zscale) > fabs(yscale))
+				if (fabs(xscale) > fabs(yscale))
+					theWorld.OnMouseDrag(zscale, DIR_Z, DIR_Y);
+				else
+					theWorld.OnMouseDrag(zscale, DIR_Z, DIR_X);
+			//OnMouseMove(x, y);
+			theWorld.lastx = x;
+			theWorld.lasty = y;
+		}
+		OnDraw();
 	}
-	else if (abs(x - theWorld.lastx) < 3 && abs(y - theWorld.lasty) < 3)
-		return;
-	else
-	{
-		// some objects selected
-		Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
-		Vector vRight = vForward.OuterProduct(theWorld.GetUp());
-		Vector u = vRight.Normalize();
-		Vector v = vForward.Normalize();
-		Vector n = theWorld.GetUp();
-		GLdouble xu = u[0] - (u * (Vector)theWorld.m_Eye), xn = n[0] - (n * (Vector)theWorld.m_Eye);
-		GLdouble yu = u[1] - (u * (Vector)theWorld.m_Eye), yn = n[1] - (n * (Vector)theWorld.m_Eye);
-		GLdouble zu = u[2] - (u * (Vector)theWorld.m_Eye), zn = n[2] - (n * (Vector)theWorld.m_Eye);
-		GLdouble cursoru = x - theWorld.lastx, cursorn = theWorld.lasty - y;
-		GLdouble xscale = (xu * cursoru + xn * cursorn) / sqrt(xu * xu + xn * xn);
-		GLdouble yscale = (yu * cursoru + yn * cursorn) / sqrt(yu * yu + yn * yn);
-		GLdouble zscale = (zu * cursoru + zn * cursorn) / sqrt(zu * zu + zn * zn);
-		if (fabs(xscale) > fabs(yscale) && fabs(xscale) > fabs(zscale))
-			if (fabs(yscale) > fabs(zscale))
-				theWorld.OnMouseDrag(xscale, DIR_X, DIR_Z);
-			else
-				theWorld.OnMouseDrag(xscale, DIR_X, DIR_Y);
-		if (fabs(yscale) > fabs(xscale) && fabs(yscale) > fabs(zscale))
-			if (fabs(xscale) > fabs(zscale))
-				theWorld.OnMouseDrag(yscale, DIR_Y, DIR_Z);
-			else
-				theWorld.OnMouseDrag(yscale, DIR_Y, DIR_X);
-		if (fabs(zscale) > fabs(xscale) && fabs(zscale) > fabs(yscale))
-			if (fabs(xscale) > fabs(yscale))
-				theWorld.OnMouseDrag(zscale, DIR_Z, DIR_Y);
-			else
-				theWorld.OnMouseDrag(zscale, DIR_Z, DIR_X);
-	}
-	OnMouseMove(x, y);
-}
-
-void OnDraw()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Polygon
-	if (Parameters::bLine == true)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	theWorld.OnOrient();
-	theWorld.OnDraw();
-	PrintfInfo();
-
-	glFlush();
 }
 
 void OnIdle()

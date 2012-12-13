@@ -8,4 +8,5 @@ enum Direction
 	DIR_Y,
 	DIR_Z,
 	DIR_NULL,
+	DIR_FLAG,
 };

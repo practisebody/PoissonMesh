@@ -3,6 +3,7 @@
 
 const Point Utility::minPoint = Point(DBL_MIN, DBL_MIN, DBL_MIN);
 const Point Utility::maxPoint = Point(DBL_MAX, DBL_MAX, DBL_MAX);
+map<int, string> Utility::HelpInfo;
 
 void Utility::DrawBasicAxis(const Point& here)
 {
@@ -108,10 +109,82 @@ void Utility::SetMax(Point& a, const Point& b)
 		SetMax(a[i], b[i]);
 }
 
-void Utility::Print(char* string)
+void Utility::Print(const char* string)
 {
-	for (char* c = string; *c != '\0'; c++)
-	{		
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+	for (const char* c = string; *c != '\0';)
+	{
+		for (; *c != '\n' && *c != '\0'; ++c)
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		if (*c == '\n')
+		{
+			PRINTINFOLEFTUPMOVENEXT;
+			++c;
+		}
 	}
+}
+
+void Utility::InitHelp()
+{
+	string strCtrl = "Ctrl + Q : Exit\nCtrl + A : Select All\n";
+	string strAlt = "Alt + F4 : Exit\n";
+	// Object Selected
+	{
+		// shift + ctrl + alt
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | GLUT_ACTIVE_CTRL | GLUT_ACTIVE_ALT,
+			""));
+		// shift + ctrl
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | GLUT_ACTIVE_CTRL | NOT(GLUT_ACTIVE_ALT),
+			""));
+		// shift + alt
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
+			""));
+		// shift
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT)
+			, ""));
+		// ctrl + alt
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | GLUT_ACTIVE_CTRL | GLUT_ACTIVE_ALT,
+			"Scaling Mode"));
+		//  ctrl
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | GLUT_ACTIVE_CTRL | NOT(GLUT_ACTIVE_ALT),
+			strCtrl + "Multiple Selection Mode"));
+		// alt
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
+			strAlt + "Focus Rotation Mode"));
+		// no key
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT),
+			""));
+	}
+
+	// No Object Selected
+	{
+		// shift + ctrl + alt
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | GLUT_ACTIVE_CTRL | GLUT_ACTIVE_ALT,
+			""));
+		// shift + ctrl
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | GLUT_ACTIVE_CTRL | NOT(GLUT_ACTIVE_ALT),
+			""));
+		// shift + alt
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
+			""));
+		// shift
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT)
+			, ""));
+		// ctrl + alt
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | GLUT_ACTIVE_CTRL | GLUT_ACTIVE_ALT,
+			"Scaling Mode"));
+		//  ctrl
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | GLUT_ACTIVE_CTRL | NOT(GLUT_ACTIVE_ALT),
+			strCtrl + "Multiple Selection Mode"));
+		// alt
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
+			strAlt + "Move Mode"));
+		// no key
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT),
+			""));
+	}
+}
+
+void Utility::PrintHelp(bool bSelect, bool bShift, bool bCtrl, bool bAlt)
+{
+	Print(HelpInfo.find(bSelect * ANYOBJECTSELECTED + bCtrl * GLUT_ACTIVE_CTRL + bAlt * GLUT_ACTIVE_ALT + bShift * GLUT_ACTIVE_SHIFT)->second.c_str());
 }

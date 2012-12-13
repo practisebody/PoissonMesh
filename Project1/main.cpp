@@ -184,7 +184,7 @@ void FixMouse(int& x, int& y)
 void OnMouseMove(int x, int y)
 {
 	FixMouse(x, y);
-	// if ctrl not pressed
+	// if ctrl or alt not pressed
 	if (GetKeyState(VK_CONTROL) >= 0 || GetKeyState(VK_MENU) >= 0)
 	{
 		GLdouble HorizontalAngle = (GLdouble)(theWorld.lastx - x) / Parameters::nWindowWidth * 2 * Parameters::PI;
@@ -218,16 +218,17 @@ void OnMouseMove(int x, int y)
 			{ u[1], v[1], n[1], theWorld.m_Eye[1] },
 			{ u[2], v[2], n[2], theWorld.m_Eye[2] },
 		};
-		if (GetKeyState(VK_MENU) < 0)
+		if (GetKeyState(VK_SHIFT) < 0)
 		{
-			// no object been selected
-			if (theWorld.m_objSelected.empty())
-			{
-				theWorld.m_Eye -= (theWorld.lasty - y) / Parameters::fMaxDrawSize / vForward.Module() * vForward;
-				theWorld.m_Center -= (theWorld.lasty - y) / Parameters::fMaxDrawSize / vForward.Module() * vForward;
-				theWorld.m_Eye += (theWorld.lastx - x) / Parameters::fMaxDrawSize / vRight.Module() * vRight;
-				theWorld.m_Center += (theWorld.lastx - x) / Parameters::fMaxDrawSize / vRight.Module() * vRight;
-			}
+			theWorld.m_Eye -= (theWorld.lasty - y) / Parameters::fMaxDrawSize / vForward.Module() * vForward;
+			theWorld.m_Center -= (theWorld.lasty - y) / Parameters::fMaxDrawSize / vForward.Module() * vForward;
+			theWorld.m_Eye += (theWorld.lastx - x) / Parameters::fMaxDrawSize / vRight.Module() * vRight;
+			theWorld.m_Center += (theWorld.lastx - x) / Parameters::fMaxDrawSize / vRight.Module() * vRight;
+		}
+		else if (GetKeyState(VK_MENU) < 0)
+		{
+			if (theWorld.m_objSelected.empty() == true)
+				;
 			// some object been selected
 			else
 			{
@@ -276,10 +277,9 @@ void OnMouseDrag(int x, int y)
 	Vector vForward = (theWorld.m_Center - theWorld.m_Eye);
 	if (abs(x - theWorld.lastx) > 3 || abs(y - theWorld.lasty) > 3)
 	{
-		if (theWorld.m_objSelected.empty() == true || theWorld.m_DragDir == DIR_FLAG)
+		if (theWorld.m_objSelected.empty() == true || theWorld.m_DragDir == DIR_FLAG || GetKeyState(VK_CONTROL) < 0)
 		{
 			GLuint* pickBuffer = new GLuint[theWorld.SizeOfFaces() * 4 + 16];
-			theWorld.m_objSelected.clear();
 			GLint nPicks, vp[4];
 
 			glSelectBuffer(theWorld.SizeOfFaces() + 1, pickBuffer); //ÉèÖÃÑ¡Ôñ»º³åÇø

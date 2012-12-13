@@ -125,8 +125,10 @@ void Utility::Print(const char* string)
 
 void Utility::InitHelp()
 {
+	string strShift = "Move Mode\n";
 	string strCtrl = "Ctrl + Q : Exit\nCtrl + A : Select All\n";
 	string strAlt = "Alt + F4 : Exit\n";
+	string strNull = "Broswing Mode\n";
 	// Object Selected
 	{
 		// shift + ctrl + alt
@@ -139,8 +141,8 @@ void Utility::InitHelp()
 		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
 			""));
 		// shift
-		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT)
-			, ""));
+		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT),
+			strShift + ""));
 		// ctrl + alt
 		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | GLUT_ACTIVE_CTRL | GLUT_ACTIVE_ALT,
 			"Scaling Mode"));
@@ -149,10 +151,10 @@ void Utility::InitHelp()
 			strCtrl + "Multiple Selection Mode"));
 		// alt
 		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
-			strAlt + "Focus Rotation Mode"));
+			strAlt + "Special InSert/Delete Mode\nFocus Rotation Mode"));
 		// no key
 		HelpInfo.insert(pair<int, string>( ANYOBJECTSELECTED | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT),
-			""));
+			strNull + ""));
 	}
 
 	// No Object Selected
@@ -167,8 +169,8 @@ void Utility::InitHelp()
 		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
 			""));
 		// shift
-		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT)
-			, ""));
+		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | GLUT_ACTIVE_SHIFT | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT),
+			strShift + ""));
 		// ctrl + alt
 		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | GLUT_ACTIVE_CTRL | GLUT_ACTIVE_ALT,
 			"Scaling Mode"));
@@ -177,10 +179,10 @@ void Utility::InitHelp()
 			strCtrl + "Multiple Selection Mode"));
 		// alt
 		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | GLUT_ACTIVE_ALT,
-			strAlt + "Move Mode"));
+			strAlt));
 		// no key
 		HelpInfo.insert(pair<int, string>( NOT(ANYOBJECTSELECTED) | NOT(GLUT_ACTIVE_SHIFT) | NOT(GLUT_ACTIVE_CTRL) | NOT(GLUT_ACTIVE_ALT),
-			""));
+			strNull + ""));
 	}
 }
 

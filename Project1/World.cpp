@@ -428,40 +428,40 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		m_objSelected.clear();
 		m_vertSelected.clear();
 		break;
-	//case 'w':
-	//	m_Eye += 0.01 / vForward.Module() * vForward;
-	//	m_Center += 0.01 / vForward.Module() * vForward;
-	//	break;
-	//case 's':
-	//	m_Eye -= 0.01 / vForward.Module() * vForward;
-	//	m_Center -= 0.01 / vForward.Module() * vForward;
-	//	break;
-	//case 'a':
-	//	m_Eye -= 0.01 / vRight.Module() * vRight;
-	//	m_Center -= 0.01 / vRight.Module() * vRight;
-	//	break;
-	//case 'd':
-	//	m_Eye += 0.01 / vRight.Module() * vRight;
-	//	m_Center += 0.01 / vRight.Module() * vRight;
-	//	break;
-	//case 'g':
-	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
-	//	break;
-	//case 'h':
-	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)1, (Direction)1);
-	//	break;
-	//case 'j':
-	//	OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)2, (Direction)2);
-	//	break;
-	//case 't':
-	//	OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
-	//	break;
-	//case 'y':
-	//	OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)1, (Direction)1);
-	//	break;
-	//case 'u':
-	//	OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)2, (Direction)2);
-	//	break;
+	case 'w':
+		m_Eye += 0.01 / vForward.Module() * vForward;
+		m_Center += 0.01 / vForward.Module() * vForward;
+		break;
+	case 's':
+		m_Eye -= 0.01 / vForward.Module() * vForward;
+		m_Center -= 0.01 / vForward.Module() * vForward;
+		break;
+	case 'a':
+		m_Eye -= 0.01 / vRight.Module() * vRight;
+		m_Center -= 0.01 / vRight.Module() * vRight;
+		break;
+	case 'd':
+		m_Eye += 0.01 / vRight.Module() * vRight;
+		m_Center += 0.01 / vRight.Module() * vRight;
+		break;
+	case 'g':
+		OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
+		break;
+	case 'h':
+		OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)1, (Direction)1);
+		break;
+	case 'j':
+		OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)2, (Direction)2);
+		break;
+	case 't':
+		OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
+		break;
+	case 'y':
+		OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)1, (Direction)1);
+		break;
+	case 'u':
+		OnMouseDrag(- Parameters::fRevisedMaginification(), (Direction)2, (Direction)2);
+		break;
 	case 127:
 		// if select one object
 		if (m_objSelected.size() == 1)
@@ -509,13 +509,12 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 		Vector(0.0, 1.0, 0.0),
 		Vector(0.0, 0.0, 1.0),
 	};
-	GLdouble Rotation[4][4] =
-	{
-		{ 1.0, 0.0, 0.0, 0.0 },
-		{ 0.0, 1.0, 0.0, 0.0 },
-		{ 0.0, 0.0, 1.0, 0.0 },
-	};
+	GLdouble Rotation[4][4];
 	MYASSERT(dir >= DIR_X && dir <= DIR_Z);
+	vector<GLdouble> distances;
+	vector<Point> centers;
+	Utility::GetNormalizedDis(pCenter, m_Faces, distances, centers);
+	Vector vScale = (scale >= 0 ? scale : scale / (1 - scale)) * bases[dir] + Vector(1.0, 1.0, 1.0);
 	if (Parameters::status == States::ROTATE)
 		dir = mindir;
 	if (m_DragDir != DIR_NULL)
@@ -530,29 +529,35 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 		break;
 	case States::SCALE:
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct((scale <= 0 ? exp(scale) - 1 : log(scale + 1)) * bases[dir] + Vector(1.0, 1.0, 1.0));
+			**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct(vScale);
+		for (vector<HEFace*>::size_type i = 1; i < m_Faces.size(); ++i)
+		{
+			GLdouble calibratedScale = distances[i] * scale;
+			vScale = (calibratedScale >= 0 ? calibratedScale : calibratedScale / (1 - calibratedScale)) * bases[dir];
+			HEFace::VertIterator iter = m_Faces[i]->beginVert();
+			do
+			{
+				*iter = centers[i] + (iter->m_vert - centers[i]).VectorProduct(vScale + Vector(1.0, 1.0, 1.0));
+				++iter;
+			}
+			while (iter != m_Faces[i]->endVert());
+		}
 		break;
 	case States::ROTATE:
-		switch (mindir)
-		{
-		case DIR_X:
-			Rotation[1][1] = cos(angle); Rotation[1][2] = - sin(angle);
-			Rotation[2][1] = sin(angle); Rotation[2][2] = cos(angle);
-			break;
-		case DIR_Y:
-			Rotation[0][0] = cos(angle); Rotation[0][2] = - sin(angle);
-			Rotation[2][0] = sin(angle); Rotation[2][2] = cos(angle);
-			break;
-		case DIR_Z:
-			Rotation[0][0] = cos(angle); Rotation[0][1] = - sin(angle);
-			Rotation[1][0] = sin(angle); Rotation[1][1] = cos(angle);
-			break;
-		default:
-			MYASSERT(false);
-			break;
-		}
+		Utility::GetRotationMatrix(mindir, angle, Rotation);
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
 			**iter = pCenter + (Vector)Transform(Rotation, (*iter)->m_vert - pCenter);
+		for (vector<HEFace*>::size_type i = 1; i < m_Faces.size(); ++i)
+		{
+			Utility::GetRotationMatrix(mindir, distances[i] * angle, Rotation);
+			HEFace::VertIterator iter = m_Faces[i]->beginVert();
+			do
+			{
+				*iter = centers[i] + (Vector)Transform(Rotation, (iter->m_vert - centers[i]));
+				++iter;
+			}
+			while (iter != m_Faces[i]->endVert());
+		}
 		if (m_DragDir == DIR_NULL)
 			m_DragDir = (Direction)mindir;
 		break;

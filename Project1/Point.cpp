@@ -56,7 +56,7 @@ const Point operator*(const GLdouble lamda, const Point& a)
 
 const Point operator*=(Point& I, const GLdouble& lamda)
 {
-	return (Point)((_Triple)I *= lamda);
+	return I = (Point)((_Triple)I *= lamda);
 }
 
 const Point operator/(const Point& I, const GLdouble lamda)
@@ -66,7 +66,7 @@ const Point operator/(const Point& I, const GLdouble lamda)
 
 const Point operator/=(Point& I, const GLdouble& lamda)
 {
-	return (Point)((_Triple)I /= lamda);
+	return I = (Point)((_Triple)I /= lamda);
 }
 
 const Point Transform(const GLdouble matrix[][4], const Point& I)

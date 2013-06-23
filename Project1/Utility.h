@@ -35,6 +35,8 @@ public:
 	static void InitHelp();
 	static void PrintHelp(bool bSelect, bool bShift, bool bCtrl, bool bAlt);
 
+	static void GetNormalizedDis(const Point center, const vector<HEFace*> faces, vector<GLdouble>& distances, vector<Point>& centers);
+	static void GetRotationMatrix(const Direction dir, const GLdouble angle, GLdouble Rotation[4][4]);
 private:
 	static map<int, string> HelpInfo;
 };

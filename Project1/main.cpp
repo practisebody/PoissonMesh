@@ -126,7 +126,7 @@ void OnDraw()
 	theWorld.OnDraw();
 	PrintfInfo();
 
-	glFlush();
+	glutSwapBuffers();
 }
 
 void OnKeyDown(unsigned char key, int x, int y)
@@ -368,7 +368,7 @@ void OnIdle()
 void main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_DEPTH | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA);
 	glutInitWindowSize(Parameters::nWindowWidth, Parameters::nWindowHeight);
 	glutCreateWindow("Project1");
 

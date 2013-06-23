@@ -11,7 +11,7 @@ public:
 	Point();
 	explicit Point(const _Triple& triple);
 	Point(GLdouble x, GLdouble y, GLdouble z);
-	Point(const HEVert* vert);
+	explicit Point(const HEVert* vert);
 	virtual const Point operator+(const Vector& that) const;
 	virtual const Point operator+=(const Vector& that);
 	friend const Point operator-(const Point& I);

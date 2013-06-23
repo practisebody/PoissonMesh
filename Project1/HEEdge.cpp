@@ -38,7 +38,7 @@ void HEEdge::DrawSelectedInner()
 
 double HEEdge::Intersect(const Point& point1, const Vector& dir1)
 {
-	Point point2 = m_vert;
+	Point point2 = (Point)m_vert;
 	Vector dir2 = (Point)m_next->m_vert - (Point)m_vert;
 	// | a00 a01 | = | b0 |
 	// | a10 a11 |   | b1 |

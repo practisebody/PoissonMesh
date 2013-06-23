@@ -4,9 +4,10 @@
 #include "HalfEdge.h"
 
 void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
-			  vector<HEVert*>& _Vertices, vector<Point*>& _TextPoints,
+			  vector<HEVert*>& rawVertices, vector<HEVert*>& _Vertices, vector<Point*>& _TextPoints,
 			  vector<Vector*>& _NormVectors, HEFace* _face, Material* material)
 {
+	HEVert* tempVert;
 	HEEdge* tempEdge;
 	GLint vFrom, vTo, vFirst;
 	GLint pText, pLastText;
@@ -22,8 +23,10 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 	{
 		++count;
 		tempEdge = new HEEdge();
-		_Vertices[vFrom]->m_edge = tempEdge;
-		tempEdge->m_vert = _Vertices[vFrom];
+		tempVert = new HEVert(*rawVertices[vFrom]);
+		_Vertices.push_back(tempVert);
+		tempVert->m_edge = tempEdge;
+		tempEdge->m_vert = tempVert;
 		tempEdge->m_face = _face;
 		tempEdge->m_text = _TextPoints[pLastText];
 		tempEdge->m_norm = _NormVectors[pLastNorm];
@@ -67,8 +70,10 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 		bool flag = edgePairs.insert(pair<pair<int,int>, HEEdge*>(pair<int,int>(vTo, vFirst), tempEdge)).second
 		MYASSERT(flag);
 	}
-	_Vertices[vTo]->m_edge = tempEdge;
-	tempEdge->m_vert = _Vertices[vTo];
+	tempVert = new HEVert(*rawVertices[vTo]);
+	_Vertices.push_back(tempVert);
+	tempVert->m_edge = tempEdge;
+	tempEdge->m_vert = tempVert;
 	tempEdge->m_next = firstEdge;
 	_face->m_edge = tempEdge;
 }
@@ -76,6 +81,7 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _TextPoints, vector<Vector*>& _NormVectors,
 		vector<HEFace*>& _Faces, map<string, Material*>& _Materials)
 {
+	vector<HEVert*> rawVertices;
 	FILE* fd = fopen(filename, "r");
 	char* line = new char[Parameters::MAX_LINE_LENGTH];
 	char* prefix = new char[Parameters::MAX_PREFIX_LENGTH];
@@ -90,6 +96,7 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 	map<pair<int, int>, HEEdge*>::iterator mapIt;
 
 	// push to start from 1
+	rawVertices.push_back(NULL);
 	_Vertices.push_back(NULL);
 	_TextPoints.push_back(NULL);
 	_NormVectors.push_back(NULL);
@@ -108,7 +115,7 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 			tempVert = new HEVert(x, y, z);
 			Utility::SetMax(Parameters::m_vMax, tempVert->m_vert);
 			Utility::SetMin(Parameters::m_vMin, tempVert->m_vert);
-			_Vertices.push_back(tempVert);
+			rawVertices.push_back(tempVert);
 		}
 		else if (strcmp(prefix, "vn") == 0)
 		{
@@ -127,7 +134,7 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 		else if (strcmp(prefix, "f") == 0)
 		{
 			tempFace = new HEFace();
-			ReadFace(line, edgePairs, _Vertices, _TextPoints, _NormVectors, tempFace, material);
+			ReadFace(line, edgePairs, rawVertices, _Vertices, _TextPoints, _NormVectors, tempFace, material);
 			_Faces.push_back(tempFace);
 		}
 		else if (strcmp(prefix, "usemtl") == 0)
@@ -137,41 +144,41 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 		}
 	}
 	// Fix Single Edge
-	while (edgePairs.empty() == false)
-	{
-		GLint vFirst, vSecond;
-		mapIt = edgePairs.begin();
-		vFirst = mapIt->first.first;
-		vSecond = mapIt->first.second;
-		if ((++mapIt)->first.first == vSecond)
-		{
-			sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
-			do
-			{
-				sprintf(word, "%d/0/0 ", mapIt->first.second);
-				strcat(word, line);
-				strcpy(line, word);
-			}
-			while ((++mapIt)->first.second != vFirst);
-		}
-		else if (mapIt->first.second == vFirst)
-		{
-			sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
-			do
-			{
-				sprintf(word, "%d/0/0 ", mapIt->first.first);
-				strcat(line, word);
-			}
-			while ((++mapIt)->first.first != vSecond);
-		}
-		else
-		{
-			MYASSERT(false);
-		}
-		tempFace = new HENullFace();
-		ReadFace(line, edgePairs, _Vertices, _TextPoints, _NormVectors, tempFace, NULL);
-		_Faces.push_back(tempFace);
-	}
+	//while (edgePairs.empty() == false)
+	//{
+	//	GLint vFirst, vSecond;
+	//	mapIt = edgePairs.begin();
+	//	vFirst = mapIt->first.first;
+	//	vSecond = mapIt->first.second;
+	//	if ((++mapIt)->first.first == vSecond)
+	//	{
+	//		sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
+	//		do
+	//		{
+	//			sprintf(word, "%d/0/0 ", mapIt->first.second);
+	//			strcat(word, line);
+	//			strcpy(line, word);
+	//		}
+	//		while ((++mapIt)->first.second != vFirst);
+	//	}
+	//	else if (mapIt->first.second == vFirst)
+	//	{
+	//		sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
+	//		do
+	//		{
+	//			sprintf(word, "%d/0/0 ", mapIt->first.first);
+	//			strcat(line, word);
+	//		}
+	//		while ((++mapIt)->first.first != vSecond);
+	//	}
+	//	else
+	//	{
+	//		MYASSERT(false);
+	//	}
+	//	tempFace = new HENullFace();
+	//	ReadFace(line, edgePairs, rawVertices, _Vertices, _TextPoints, _NormVectors, tempFace, NULL);
+	//	_Faces.push_back(tempFace);
+	//}
 	delete [] line;
 	delete [] prefix;
 	delete [] strName;
@@ -179,6 +186,6 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 	fclose(fd);
 
 	// set parameters
-	Parameters::nMaxDrawNumber = log(_Vertices.size()) * 2;
+	Parameters::nMaxDrawNumber = log((double)rawVertices.size()) * 2;
 	Parameters::fMaxDrawSize = (Parameters::m_vMax - Parameters::m_vMin).Module() / 8;
 }

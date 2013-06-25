@@ -33,3 +33,6 @@ ipch*/
 *.bmp
 *.mtl
 *.dll
+*.dds
+*.tif
+*.tga

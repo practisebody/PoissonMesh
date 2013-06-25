@@ -2,6 +2,7 @@
 #include "World.h"
 #include "HalfEdge.h"
 #include <algorithm>
+#include "Math.h"
 
 World::World(GLdouble eyex, GLdouble eyey, GLdouble eyez, GLdouble centerx, GLdouble centery, GLdouble centerz,
 			 GLdouble upx, GLdouble upy, GLdouble upz)
@@ -25,6 +26,8 @@ World::~World()
 void World::Init(const char* name)
 {
 	ReadOBJ(name, m_Vertices, m_TextPoints, m_NormVectors, m_Faces, m_Materials);
+	// Init Poisson
+	Math::InitPoisson(m_Faces);
 }
 
 Vector World::GetUp()
@@ -179,7 +182,7 @@ HEObject* World::GetNearestObject()
 	// A Face Been Selected
 	if (faceRet != NULL)
 	{
-		HEFace::EdgeIterator iter = faceRet->beginEdge();
+		/*HEFace::EdgeIterator iter = faceRet->beginEdge();
 		do
 		{
 			Distance = iter->Intersect(m_Eye, vForward);
@@ -211,7 +214,7 @@ HEObject* World::GetNearestObject()
 			else
 				return edgeRet;
 		}
-		else
+		else*/
 			return faceRet;
 	}
 	return NULL;
@@ -493,6 +496,9 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		break;
 	//case 'x':
 	//	Parameters::status = ((int)Parameters::status + 1) % 3;
+	case 0x0d:
+		Math::CalcPoisson(m_Faces);
+		break;
 	default:
 		break;
 	}
@@ -513,7 +519,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 	MYASSERT(dir >= DIR_X && dir <= DIR_Z);
 	vector<GLdouble> distances;
 	vector<Point> centers;
-	Utility::GetNormalizedDis(pCenter, m_Faces, distances, centers);
+	Math::GetNormalizedDis(pCenter, m_Faces, distances, centers);
 	Vector vScale = (scale >= 0 ? scale : scale / (1 - scale)) * bases[dir] + Vector(1.0, 1.0, 1.0);
 	if (Parameters::status == States::ROTATE)
 		dir = mindir;
@@ -528,28 +534,28 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 			**iter += scale * bases[dir];
 		break;
 	case States::SCALE:
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct(vScale);
+		//for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+		//	**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct(vScale);
 		for (vector<HEFace*>::size_type i = 1; i < m_Faces.size(); ++i)
 		{
 			GLdouble calibratedScale = distances[i] * scale;
-			vScale = (calibratedScale >= 0 ? calibratedScale : calibratedScale / (1 - calibratedScale)) * bases[dir];
+			vScale = (calibratedScale >= 0 ? calibratedScale : calibratedScale / (1 - calibratedScale)) * bases[dir] + Vector(1.0, 1.0, 1.0);
 			HEFace::VertIterator iter = m_Faces[i]->beginVert();
 			do
 			{
-				*iter = centers[i] + (iter->m_vert - centers[i]).VectorProduct(vScale + Vector(1.0, 1.0, 1.0));
+				*iter = centers[i] + (iter->m_vert - centers[i]).VectorProduct(vScale);
 				++iter;
 			}
 			while (iter != m_Faces[i]->endVert());
 		}
 		break;
 	case States::ROTATE:
-		Utility::GetRotationMatrix(mindir, angle, Rotation);
-		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter = pCenter + (Vector)Transform(Rotation, (*iter)->m_vert - pCenter);
+		//Utility::GetRotationMatrix(mindir, angle, Rotation);
+		//for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+		//	**iter = pCenter + (Vector)Transform(Rotation, (*iter)->m_vert - pCenter);
 		for (vector<HEFace*>::size_type i = 1; i < m_Faces.size(); ++i)
 		{
-			Utility::GetRotationMatrix(mindir, distances[i] * angle, Rotation);
+			Math::GetRotationMatrix(mindir, distances[i] * angle, Rotation);
 			HEFace::VertIterator iter = m_Faces[i]->beginVert();
 			do
 			{

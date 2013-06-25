@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Utility.h"
-#include "HEFace.h"
 
 const Point Utility::minPoint = Point(DBL_MIN, DBL_MIN, DBL_MIN);
 const Point Utility::maxPoint = Point(DBL_MAX, DBL_MAX, DBL_MAX);
@@ -190,57 +189,4 @@ void Utility::InitHelp()
 void Utility::PrintHelp(bool bSelect, bool bShift, bool bCtrl, bool bAlt)
 {
 	Print(HelpInfo.find(bSelect * ANYOBJECTSELECTED + bCtrl * GLUT_ACTIVE_CTRL + bAlt * GLUT_ACTIVE_ALT + bShift * GLUT_ACTIVE_SHIFT)->second.c_str());
-}
-
-void Utility::GetNormalizedDis(const Point center, const vector<HEFace*> faces, vector<GLdouble>& distances, vector<Point>& centers)
-{
-	GLdouble dDis, dMaxDis = 0;
-	distances.push_back(0);	
-	centers.push_back(Point());
-	for (vector<HEFace*>::size_type i = 1; i < faces.size(); ++i)
-	{
-		Point pTestCenter(0, 0, 0);
-		int number = 0;
-		HEFace::VertIterator iter = faces[i]->beginVert();
-		do
-		{
-			pTestCenter += (Vector)(&*iter);
-			++number;
-			++iter;
-		}
-		while (iter != faces[i]->endVert());
-		pTestCenter /= number;
-		centers.push_back(pTestCenter);
-		dDis = (center - pTestCenter).Module();
-		distances.push_back(dDis);
-		Utility::SetMax<GLdouble>(dMaxDis, dDis);
-	}
-	for (vector<GLdouble>::size_type i = 1; i < distances.size(); ++i)
-	{
-		distances[i] /= dMaxDis;
-	}
-}
-
-void Utility::GetRotationMatrix(const Direction dir, const GLdouble angle, GLdouble Rotation[4][4])
-{
-	memset(Rotation, 0, sizeof(GLdouble) * 4 * 4);
-	Rotation[0][0] = Rotation[1][1] = Rotation[2][2] = 1.0l;
-	switch (dir)
-	{
-	case DIR_X:
-		Rotation[1][1] = cos(angle); Rotation[1][2] = - sin(angle);
-		Rotation[2][1] = sin(angle); Rotation[2][2] = cos(angle);
-		break;
-	case DIR_Y:
-		Rotation[0][0] = cos(angle); Rotation[0][2] = - sin(angle);
-		Rotation[2][0] = sin(angle); Rotation[2][2] = cos(angle);
-		break;
-	case DIR_Z:
-		Rotation[0][0] = cos(angle); Rotation[0][1] = - sin(angle);
-		Rotation[1][0] = sin(angle); Rotation[1][1] = cos(angle);
-		break;
-	default:
-		MYASSERT(false);
-		break;
-	}
 }

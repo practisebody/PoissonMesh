@@ -93,6 +93,15 @@
     <ClInclude Include="defines.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="tga.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="dds.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -150,6 +159,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Point.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tga.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dds.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

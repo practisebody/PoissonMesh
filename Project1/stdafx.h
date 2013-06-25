@@ -9,12 +9,11 @@
 #include <string>
 using namespace std;
 
-// bmp
 #include <Windows.h>
-// 3ds
-//#include <ddraw.h>
+#include <ddraw.h>
 
 // openGL
 #define GLUT_DISABLE_ATEXIT_HACK
 #include <gl/glew.h>
+#pragma comment(lib, "glew32.lib")
 #include <gl/glut.h>

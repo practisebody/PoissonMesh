@@ -102,6 +102,7 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 	_NormVectors.push_back(NULL);
 	while (fgets(line, Parameters::MAX_LINE_LENGTH, fd) != NULL)
 	{
+		strcat(line, " ");
 		sscanf(line, "%s %[^\n]", prefix, line);
 		if (strcmp(prefix, "mtllib") == 0)
 		{

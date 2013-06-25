@@ -1,12 +1,15 @@
 #include "stdafx.h"
 #include "mtl.h"
 #include "bmp.h"
+#include "tga.h"
+#include "dds.h"
 
 void ReadMTL(const char* filename, map<string, Material*>& _Materials)
 {
 	FILE* fd = fopen(filename, "r");
 	char* line = new char[Parameters::MAX_LINE_LENGTH];
 	char* prefix = new char[Parameters::MAX_PREFIX_LENGTH];
+	char* suffix = new char[Parameters::MAX_SUFFIX_LENGTH];
 	char* strName = new char[Parameters::MAX_LINE_LENGTH];
 
 	while (fgets(line, Parameters::MAX_LINE_LENGTH, fd) != NULL)
@@ -64,7 +67,19 @@ void ReadMTL(const char* filename, map<string, Material*>& _Materials)
 					}
 					else
 					{
-						texture = ReadBMP2TEX(strName);
+						sscanf(strName, "%*[^.].%s", suffix);
+						if (strcmp(suffix, "bmp") == 0)
+						{
+							texture = ReadBMP2TEX(strName);
+						}
+						else if (strcmp(suffix, "tga") == 0)
+						{
+							texture = ReadTGA2TEX(strName);
+						}
+						else if (strcmp(suffix, "dds") == 0)
+						{
+							texture = ReadDDS2TEX(strName);
+						}
 						Material::m_Textures[strName] = texture;
 						material->Kd_map = texture;
 					}

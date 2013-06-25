@@ -365,12 +365,15 @@ void OnIdle()
 	glutPostRedisplay();
 }
 
+#include <iostream>
+
 void main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA);
 	glutInitWindowSize(Parameters::nWindowWidth, Parameters::nWindowHeight);
 	glutCreateWindow("Project1");
+	glewInit();
 
 	Init(argc, argv);
 	glutKeyboardFunc(OnKeyDown);

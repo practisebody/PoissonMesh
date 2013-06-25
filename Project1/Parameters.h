@@ -13,6 +13,7 @@ public:
 	static const GLdouble PI;
 	static const int MAX_LINE_LENGTH;
 	static const int MAX_PREFIX_LENGTH;
+	static const int MAX_SUFFIX_LENGTH;
 	static const GLdouble zNear;
 	static const GLdouble zFar;
 	static GLfloat fMagnification;

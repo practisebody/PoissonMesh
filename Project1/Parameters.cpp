@@ -25,6 +25,7 @@ const int Parameters::nWindowHeight = GetSystemMetrics(SM_CYSCREEN);
 const int Parameters::nWindowWidth = GetSystemMetrics(SM_CXSCREEN);
 const int Parameters::nMargin = 30;
 int Parameters::nCount;
+bool Parameters::bSelectVert = false;
 
 GLfloat Parameters::fRevisedMaginification()
 {

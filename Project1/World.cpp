@@ -25,9 +25,49 @@ World::~World()
 
 void World::Init(const char* name)
 {
-	ReadOBJ(name, m_Vertices, m_TextPoints, m_NormVectors, m_Faces, m_Materials);
-	// Init Poisson
-	Math::InitPoisson(m_Faces);
+	ReadOBJ(name, m_rawVertices, m_Vertices, m_TextPoints, m_NormVectors, m_Faces, m_Materials);
+	// select
+	BOOL* select = new BOOL[m_rawVertices.size()];
+	memset(select, 0, sizeof(BOOL) * m_rawVertices.size());
+	GLint rawselect[] = {
+		1734,
+		3868,
+		2955,
+		2043,
+		1489,
+		3896,
+		159,
+		2165,
+		2166,
+		2948,
+		632,
+		2267,
+		2310,
+		1057,
+		346,
+		1309,
+		1927,
+		4083,
+		3983,
+		1540,
+		219,
+		4233,
+		185,
+		4982,
+		4548,
+		0,
+	};
+	int i = -1;
+	while (rawselect[++i] != 0)
+		select[rawselect[i]] = TRUE;
+	for (vector<HEVert*>::size_type i = 1; i < m_Vertices.size(); ++i)
+	{
+		if (select[m_Vertices[i]->m_realVert] == TRUE)
+			m_objSelected.insert(m_Vertices[i]);
+	}
+	FixingSelectedVetices();
+	ReCalculateSum();
+	delete [] select;
 }
 
 Vector World::GetUp()
@@ -182,39 +222,42 @@ HEObject* World::GetNearestObject()
 	// A Face Been Selected
 	if (faceRet != NULL)
 	{
-		/*HEFace::EdgeIterator iter = faceRet->beginEdge();
-		do
+		if (Parameters::bSelectVert)
 		{
-			Distance = iter->Intersect(m_Eye, vForward);
-			LeastDis = Parameters::zFar;
-			if (Distance > Parameters::zNear && LeastDis > Distance)
-			{
-				edgeRet = &(*iter);
-				LeastDis = Distance;
-			}
-			++iter;
-		} while (iter != faceRet->endEdge()); 
-		// An Edge Been Selected
-		if (edgeRet != NULL)
-		{
-			HEEdge::VertIterator iter = edgeRet->beginVert();
+			HEFace::EdgeIterator iter = faceRet->beginEdge();
 			do
 			{
 				Distance = iter->Intersect(m_Eye, vForward);
 				LeastDis = Parameters::zFar;
 				if (Distance > Parameters::zNear && LeastDis > Distance)
 				{
-					vertRet = &(*iter);
+					edgeRet = &(*iter);
 					LeastDis = Distance;
 				}
 				++iter;
-			} while (iter != edgeRet->endVert());
-			if (vertRet != NULL)
-				return vertRet;
-			else
-				return edgeRet;
+			} while (iter != faceRet->endEdge()); 
+			// An Edge Been Selected
+			if (edgeRet != NULL)
+			{
+				HEEdge::VertIterator iter = edgeRet->beginVert();
+				do
+				{
+					Distance = iter->Intersect(m_Eye, vForward);
+					LeastDis = Parameters::zFar;
+					if (Distance > Parameters::zNear && LeastDis > Distance)
+					{
+						vertRet = &(*iter);
+						LeastDis = Distance;
+					}
+					++iter;
+				} while (iter != edgeRet->endVert());
+				if (vertRet != NULL)
+					return vertRet;
+				else
+					return edgeRet;
+			}
 		}
-		else*/
+		else
 			return faceRet;
 	}
 	return NULL;
@@ -255,6 +298,8 @@ void World::OnMouseClick(int button, int state, int modifiers)
 {
 	vector<HEVert*>::iterator vertIter;
 	HEObject* obj = GetNearestObject();
+	if (Parameters::bSelectVert)
+		printf("%d\n", dynamic_cast<HEVert*>(obj)->m_realVert);
 	switch (button)
 	{
 	case GLUT_LEFT_BUTTON:
@@ -494,10 +539,19 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		m_vertSelected.clear();
 		DeleteObjects(deletedObjects);
 		break;
+	case 'z':
+		for (vector<HEFace*>::size_type i = 0; i < m_Faces.size(); ++i)
+			m_Faces[i]->Update(m_rawVertices);
+		Math::InitPoisson(m_Faces, m_rawVertices);
+		break;
 	//case 'x':
 	//	Parameters::status = ((int)Parameters::status + 1) % 3;
+	case 'x':
+		Parameters::bSelectVert = !Parameters::bSelectVert;
 	case 0x0d:
-		Math::CalcPoisson(m_Faces);
+		Math::CalcPoisson(m_Faces, m_rawVertices, m_vertSelected);
+		for (vector<HEFace*>::size_type i = 0; i < m_Faces.size(); ++i)
+			m_Faces[i]->Update(m_rawVertices);
 		break;
 	default:
 		break;
@@ -520,10 +574,12 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 	vector<GLdouble> distances;
 	vector<Point> centers;
 	Math::GetNormalizedDis(pCenter, m_Faces, distances, centers);
+	//BOOL* fixed = new BOOL[m_rawVertices.size()];
+	//memset(fixed, 0, sizeof(BOOL) * m_rawVertices.size());
 	Vector vScale = (scale >= 0 ? scale : scale / (1 - scale)) * bases[dir] + Vector(1.0, 1.0, 1.0);
 	if (Parameters::status == States::ROTATE)
 		dir = mindir;
-	if (m_DragDir != DIR_NULL)
+	if (m_DragDir != DIR_NULL && dir != mindir)
 		dir = m_DragDir;
 	else
 		m_DragDir = dir;
@@ -534,8 +590,11 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 			**iter += scale * bases[dir];
 		break;
 	case States::SCALE:
-		//for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-		//	**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct(vScale);
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+		{
+			//fixed[(*iter)->m_realVert] = TRUE;
+			**iter = pCenter + ((*iter)->m_vert - pCenter).VectorProduct(vScale);
+		}
 		for (vector<HEFace*>::size_type i = 1; i < m_Faces.size(); ++i)
 		{
 			GLdouble calibratedScale = distances[i] * scale;
@@ -543,23 +602,30 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 			HEFace::VertIterator iter = m_Faces[i]->beginVert();
 			do
 			{
-				*iter = centers[i] + (iter->m_vert - centers[i]).VectorProduct(vScale);
+				if (m_vertSelected.find(&*iter) != m_vertSelected.end())
+				//if (fixed[iter->m_realVert] == FALSE)
+					*iter = centers[i] + (iter->m_vert - centers[i]).VectorProduct(vScale);
 				++iter;
 			}
 			while (iter != m_Faces[i]->endVert());
 		}
 		break;
 	case States::ROTATE:
-		//Utility::GetRotationMatrix(mindir, angle, Rotation);
-		//for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-		//	**iter = pCenter + (Vector)Transform(Rotation, (*iter)->m_vert - pCenter);
+		Math::GetRotationMatrix(mindir, angle, Rotation);
+		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
+		{
+			//fixed[(*iter)->m_realVert] = TRUE;
+			**iter = pCenter + (Vector)Transform(Rotation, (*iter)->m_vert - pCenter);
+		}
 		for (vector<HEFace*>::size_type i = 1; i < m_Faces.size(); ++i)
 		{
 			Math::GetRotationMatrix(mindir, distances[i] * angle, Rotation);
 			HEFace::VertIterator iter = m_Faces[i]->beginVert();
 			do
 			{
-				*iter = centers[i] + (Vector)Transform(Rotation, (iter->m_vert - centers[i]));
+				if (m_vertSelected.find(&*iter) != m_vertSelected.end())
+				//if (fixed[iter->m_realVert] == FALSE)
+					*iter = centers[i] + (Vector)Transform(Rotation, (iter->m_vert - centers[i]));
 				++iter;
 			}
 			while (iter != m_Faces[i]->endVert());
@@ -572,6 +638,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 		break;
 	}
 	ReCalculateSum();
+	//delete [] fixed;
 }
 
 int World::SizeOfFaces()

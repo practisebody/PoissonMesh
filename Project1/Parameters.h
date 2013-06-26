@@ -34,4 +34,5 @@ public:
 	static const int nMargin;
 	// for left up corner only
 	static int nCount;
+	static bool bSelectVert;
 };

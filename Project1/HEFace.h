@@ -17,6 +17,7 @@ struct HEFace : public HEObject
 
     HEEdge* m_edge;  // one of the half-edges
 	Material* m_mtl;
+	GLdouble m_area;
 	virtual void Draw();
 	virtual void DrawSelected();
 	void DrawSelectedInner();
@@ -26,6 +27,9 @@ struct HEFace : public HEObject
 	virtual void InsertVertices(vector<HEVert*>& verts, vector<HEFace*>& faces);
 	virtual void Delete(set<HEObject*>& deletedObjects);
 	bool InPlane(const Point& point);
+	void Update(const vector<HEVert*>& verts);
+	GLdouble CalcArea();
+	//GLdouble GetArea();
 };
 
 #include "HEFaceIterators.h"

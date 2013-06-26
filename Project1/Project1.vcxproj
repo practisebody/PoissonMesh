@@ -85,6 +85,7 @@
     <ClCompile Include="HEVert.cpp" />
     <ClCompile Include="LineWidth.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="matrix.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="States.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -117,6 +118,8 @@
     <ClInclude Include="Iterator.h" />
     <ClInclude Include="LineWidth.h" />
     <ClInclude Include="Math.h" />
+    <ClInclude Include="matrix.h" />
+    <ClInclude Include="matrix_inl.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="Material.h" />

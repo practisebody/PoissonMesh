@@ -39,6 +39,7 @@ private:
 	HEObject* GetNearestObject();
 	Vector m_Up;
 	map<string, Material*> m_Materials;
+	vector<HEVert*> m_rawVertices;   // raw vertices from obj, start from 1
 	vector<HEVert*> m_Vertices;   // read from obj, start from 1
 public:
 	vector<HEFace*> m_Faces;

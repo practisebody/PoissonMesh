@@ -24,6 +24,7 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 		++count;
 		tempEdge = new HEEdge();
 		tempVert = new HEVert(*rawVertices[vFrom]);
+		tempVert->m_realVert = vFrom;
 		_Vertices.push_back(tempVert);
 		tempVert->m_edge = tempEdge;
 		tempEdge->m_vert = tempVert;
@@ -71,6 +72,7 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 		MYASSERT(flag);
 	}
 	tempVert = new HEVert(*rawVertices[vTo]);
+	tempVert->m_realVert = vTo;
 	_Vertices.push_back(tempVert);
 	tempVert->m_edge = tempEdge;
 	tempEdge->m_vert = tempVert;
@@ -78,10 +80,10 @@ void ReadFace(const char* line, map<pair<int, int>, HEEdge*>& edgePairs,
 	_face->m_edge = tempEdge;
 }
 
-void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _TextPoints, vector<Vector*>& _NormVectors,
+void ReadOBJ(const char* filename, vector<HEVert*>& rawVertices,
+		vector<HEVert*>& _Vertices, vector<Point*>& _TextPoints, vector<Vector*>& _NormVectors,
 		vector<HEFace*>& _Faces, map<string, Material*>& _Materials)
 {
-	vector<HEVert*> rawVertices;
 	FILE* fd = fopen(filename, "r");
 	char* line = new char[Parameters::MAX_LINE_LENGTH];
 	char* prefix = new char[Parameters::MAX_PREFIX_LENGTH];
@@ -144,6 +146,8 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 			material = _Materials.find(strName)->second;
 		}
 	}
+	MYASSERT(edgePairs.empty());
+	printf("%d\n", edgePairs.size());
 	// Fix Single Edge
 	//while (edgePairs.empty() == false)
 	//{
@@ -187,6 +191,6 @@ void ReadOBJ(const char* filename, vector<HEVert*>& _Vertices, vector<Point*>& _
 	fclose(fd);
 
 	// set parameters
-	Parameters::nMaxDrawNumber = log((double)rawVertices.size()) * 2;
+	Parameters::nMaxDrawNumber = INT_MAX;
 	Parameters::fMaxDrawSize = (Parameters::m_vMax - Parameters::m_vMin).Module() / 8;
 }

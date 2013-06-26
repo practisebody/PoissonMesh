@@ -104,7 +104,7 @@ void Init(int argc, char** argv)
 
 	// Read obj
 	if (argc == 1)
-		theWorld.Init("dog.obj");
+		theWorld.Init("bunny.obj");
 	else
 		theWorld.Init(argv[1]);
 
@@ -365,7 +365,7 @@ void OnIdle()
 	glutPostRedisplay();
 }
 
-#include <iostream>
+#include "matrix.h"
 
 void main(int argc, char** argv)
 {

@@ -2,11 +2,11 @@
 #include "HEVert.h"
 #include "HEFace.h"
 
-HEVert::HEVert(GLdouble _x, GLdouble _y, GLdouble _z) : m_vert(_x, _y, _z), m_edge(NULL)
+HEVert::HEVert(GLdouble _x, GLdouble _y, GLdouble _z) : m_vert(_x, _y, _z), m_edge(NULL), m_realVert(NULL)
 {
 }
 
-HEVert::HEVert(const Point& point) : m_vert(point[0] , point[1], point[2]), m_edge(NULL)
+HEVert::HEVert(const Point& point) : m_vert(point[0] , point[1], point[2]), m_edge(NULL), m_realVert(NULL)
 {
 	//m_vert = m_vert / Parameters::fMagnification;
 }
@@ -22,7 +22,7 @@ void HEVert::DrawSelectedInner()
 {
 	glPushMatrix();
 	Utility::Translated(m_vert);
-	glutWireCube(0.5);
+	glutWireCube(0.005);
 	glPopMatrix();
 }
 
@@ -79,4 +79,9 @@ void HEVert::operator+=(Vector vector)
 void HEVert::operator=(Point point)
 {
 	m_vert = point;
+}
+
+void HEVert::Update(const vector<HEVert*>& verts)
+{
+	m_vert = verts[m_realVert]->m_vert;
 }

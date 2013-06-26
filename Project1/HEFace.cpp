@@ -242,3 +242,36 @@ bool HEFace::InPlane(const Point& point)
 	} while (iter != endEdge());
 	return true;
 }
+
+void HEFace::Update(const vector<HEVert*>& verts)
+{
+	VertIterator iter = beginVert();
+	do
+	{
+		iter->Update(verts);
+		++iter;
+	}
+	while (iter != endVert());
+}
+
+GLdouble HEFace::CalcArea()
+{
+	GLdouble a[3];
+	int count = 0;
+	EdgeIterator iter = beginEdge();
+	do
+	{
+		a[count] = (iter->m_next->m_vert->m_vert - iter->m_vert->m_vert).Module();
+		++count;
+		++iter;
+	}
+	while (iter != endEdge());
+	MYASSERT(count == 3);
+	GLdouble p = (a[0] + a[1] + a[2]) / 2;
+	return m_area = sqrt(p * (p - a[0]) * (p - a[1]) * (p - a[2]));
+}
+
+/*GLdouble HEFace::GetArea()
+{
+	return m_area;
+}*/

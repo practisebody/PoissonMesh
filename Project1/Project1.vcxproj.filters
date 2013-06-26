@@ -102,6 +102,12 @@
     <ClInclude Include="Math.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="matrix_inl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -168,6 +174,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Math.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

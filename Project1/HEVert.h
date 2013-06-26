@@ -17,6 +17,8 @@ struct HEVert : public HEObject
 
 	Point m_vert;
     HEEdge* m_edge;  // one of the half-edges leaving the vertex
+	GLint m_realVert;
+	Vector m_Gradient;
 	HEVert(GLdouble _x, GLdouble _y, GLdouble _z);
 	HEVert(const Point& point);
 	virtual void DrawSelected();
@@ -27,6 +29,7 @@ struct HEVert : public HEObject
 	virtual void Delete(set<HEObject*>& deletedObjects);
 	void operator+=(Vector vector);
 	void operator=(Point point);
+	void Update(const vector<HEVert*>& verts);
 };
 
 #include "HEVertIterators.h"

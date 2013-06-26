@@ -2,7 +2,7 @@
 #include "World.h"
 #include "HalfEdge.h"
 
-World theWorld(0.5, 0.5, 0.5, 0.0, 0.0, 0.0, -0.5, -0.5, 1.0);
+World theWorld(3.0, 3.0, 3.0, 0.0, 0.0, 0.0, -0.5, -0.5, 1.0);
 
 void PrintfInfo()
 {
@@ -72,7 +72,7 @@ void Init(int argc, char** argv)
 {
 	// Light
 	glEnable(GL_LIGHTING);
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	//glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 	GLfloat position[4] = { 10, 0, 0, 1 };
 	GLfloat ambient[4] = { 0.1, 0.1, 0.1, 1 };
 	GLfloat diffuse[4] = { 0.2, 0.2, 0.2, 1 };
@@ -104,7 +104,7 @@ void Init(int argc, char** argv)
 
 	// Read obj
 	if (argc == 1)
-		theWorld.Init("bunny.obj");
+		theWorld.Init("r.obj");
 	else
 		theWorld.Init(argv[1]);
 
@@ -312,7 +312,7 @@ void OnMouseDrag(int x, int y)
 			//获得选择集并输出
 			nPicks = glRenderMode(GL_RENDER);
 			HEFace* face;
-			for(GLint i = 1; i < nPicks; ++i)
+			for(GLint i = 1; i < nPicks - 1; ++i)
 			{
 				face = theWorld.m_Faces[pickBuffer[4 * i + 3]];
 				if (dynamic_cast<HENullFace*>(face) == NULL)

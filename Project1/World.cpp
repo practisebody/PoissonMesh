@@ -30,31 +30,6 @@ void World::Init(const char* name)
 	BOOL* select = new BOOL[m_rawVertices.size()];
 	memset(select, 0, sizeof(BOOL) * m_rawVertices.size());
 	GLint rawselect[] = {
-		1734,
-		3868,
-		2955,
-		2043,
-		1489,
-		3896,
-		159,
-		2165,
-		2166,
-		2948,
-		632,
-		2267,
-		2310,
-		1057,
-		346,
-		1309,
-		1927,
-		4083,
-		3983,
-		1540,
-		219,
-		4233,
-		185,
-		4982,
-		4548,
 		0,
 	};
 	int i = -1;
@@ -68,6 +43,8 @@ void World::Init(const char* name)
 	FixingSelectedVetices();
 	ReCalculateSum();
 	delete [] select;
+	// Poisson
+	Math::InitPoisson(m_Faces, m_rawVertices);
 }
 
 Vector World::GetUp()
@@ -276,7 +253,7 @@ void World::ReCalculateSum()
 			Utility::SetMin(m_vSelectedMin, (*vertIter)->m_vert);
 			m_SelectSum += (Vector)(*vertIter)->m_vert;
 		}
-		Parameters::fAxisLength = (m_vSelectedMax - m_vSelectedMin).Module() / 3 + Parameters::fRevisedMaginification();
+		Parameters::fAxisLength = (m_vSelectedMax - m_vSelectedMin).Module() / 3;// + Parameters::fRevisedMaginification();
 	}
 }
 
@@ -477,20 +454,20 @@ void World::OnKeyDown(unsigned char key, int modifiers)
 		m_vertSelected.clear();
 		break;
 	case 'w':
-		m_Eye += 0.01 / vForward.Module() * vForward;
-		m_Center += 0.01 / vForward.Module() * vForward;
+		m_Eye += 0.1 / vForward.Module() * vForward;
+		m_Center += 0.1 / vForward.Module() * vForward;
 		break;
 	case 's':
-		m_Eye -= 0.01 / vForward.Module() * vForward;
-		m_Center -= 0.01 / vForward.Module() * vForward;
+		m_Eye -= 0.1 / vForward.Module() * vForward;
+		m_Center -= 0.1 / vForward.Module() * vForward;
 		break;
 	case 'a':
-		m_Eye -= 0.01 / vRight.Module() * vRight;
-		m_Center -= 0.01 / vRight.Module() * vRight;
+		m_Eye -= 0.1 / vRight.Module() * vRight;
+		m_Center -= 0.1 / vRight.Module() * vRight;
 		break;
 	case 'd':
-		m_Eye += 0.01 / vRight.Module() * vRight;
-		m_Center += 0.01 / vRight.Module() * vRight;
+		m_Eye += 0.1 / vRight.Module() * vRight;
+		m_Center += 0.1 / vRight.Module() * vRight;
 		break;
 	case 'g':
 		OnMouseDrag(Parameters::fRevisedMaginification(), (Direction)0, (Direction)0);
@@ -587,7 +564,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 	{
 	case States::TRANSLATE:
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
-			**iter += scale * bases[dir];
+			**iter += scale * bases[dir] / 100;
 		break;
 	case States::SCALE:
 		for (set<HEVert*>::iterator iter = m_vertSelected.begin(); iter != m_vertSelected.end(); ++iter)
@@ -602,7 +579,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 			HEFace::VertIterator iter = m_Faces[i]->beginVert();
 			do
 			{
-				if (m_vertSelected.find(&*iter) != m_vertSelected.end())
+				if (m_vertSelected.find(&*iter) == m_vertSelected.end())
 				//if (fixed[iter->m_realVert] == FALSE)
 					*iter = centers[i] + (iter->m_vert - centers[i]).VectorProduct(vScale);
 				++iter;
@@ -623,7 +600,7 @@ void World::OnMouseDrag(GLdouble scale, Direction dir, Direction mindir)
 			HEFace::VertIterator iter = m_Faces[i]->beginVert();
 			do
 			{
-				if (m_vertSelected.find(&*iter) != m_vertSelected.end())
+				if (m_vertSelected.find(&*iter) == m_vertSelected.end())
 				//if (fixed[iter->m_realVert] == FALSE)
 					*iter = centers[i] + (Vector)Transform(Rotation, (iter->m_vert - centers[i]));
 				++iter;

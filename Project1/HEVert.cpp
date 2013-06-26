@@ -22,7 +22,8 @@ void HEVert::DrawSelectedInner()
 {
 	glPushMatrix();
 	Utility::Translated(m_vert);
-	glutWireCube(0.005);
+	Material::SetColorRGB(MATERTIAL_RED);
+	glutWireCube(0.0005);
 	glPopMatrix();
 }
 

@@ -31,7 +31,7 @@ void Math::GetNormalizedDis(const Point& center, const vector<HEFace*>& faces, v
 	//GLdouble range = exp(1) - 1;
 	for (vector<GLdouble>::size_type i = 1; i < distances.size(); ++i)
 	{
-		distances[i] = exp(- distances[i] * distances[i] * 10);
+		distances[i] = exp(- distances[i] * distances[i] * 50);
 		//distances[i] = 1 - distances[i] / dMaxDis;
 	}
 }
@@ -121,7 +121,7 @@ void Math::InitPoisson(const vector<HEFace*>& faces, vector<HEVert*>& rawVerts)
 		while (iter != faces[i]->endEdge());
 	}
 	time_t stop = time(NULL);
-	printf("Init: %d ms\n", stop - start);
+	printf("Init: %d s\n", stop - start);
 }
 
 void Math::CalcPoisson(const vector<HEFace*>& faces, vector<HEVert*>& rawVerts, const set<HEVert*>& fixedVerts)
@@ -171,14 +171,14 @@ void Math::CalcPoisson(const vector<HEFace*>& faces, vector<HEVert*>& rawVerts, 
 		for (int i = 0; i < 3; ++i)
 			B[i][(*iter)->m_realVert - 1] = (*iter)->m_vert[i];
 	}
-	matrix::vector x = A.conjugate_gradient(B[0], B[0], 100000, 0.000001);
-	matrix::vector y = A.conjugate_gradient(B[1], B[1], 100000, 0.000001);
-	matrix::vector z = A.conjugate_gradient(B[2], B[2], 100000, 0.000001);
+	matrix::vector x = A.conjugate_gradient(B[0], B[0], B[0].size(), 0.000001);
+	matrix::vector y = A.conjugate_gradient(B[1], B[1], B[0].size(), 0.000001);
+	matrix::vector z = A.conjugate_gradient(B[2], B[2], B[0].size(), 0.000001);
 	for (vector<HEVert*>::size_type i = 1; i < rawVerts.size(); ++i) {
 		rawVerts[i]->m_vert[0] = x[i - 1];
 		rawVerts[i]->m_vert[1] = y[i - 1];
 		rawVerts[i]->m_vert[2] = z[i - 1];
 	}
 	time_t stop = time(NULL);
-	printf("Calc: %d ms\n", stop - start);
+	printf("Calc: %d s\n", stop - start);
 }

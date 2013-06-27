@@ -147,43 +147,43 @@ void ReadOBJ(const char* filename, vector<HEVert*>& rawVertices,
 		}
 	}
 	MYASSERT(edgePairs.empty());
-	printf("%d\n", edgePairs.size());
 	// Fix Single Edge
-	//while (edgePairs.empty() == false)
-	//{
-	//	GLint vFirst, vSecond;
-	//	mapIt = edgePairs.begin();
-	//	vFirst = mapIt->first.first;
-	//	vSecond = mapIt->first.second;
-	//	if ((++mapIt)->first.first == vSecond)
-	//	{
-	//		sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
-	//		do
-	//		{
-	//			sprintf(word, "%d/0/0 ", mapIt->first.second);
-	//			strcat(word, line);
-	//			strcpy(line, word);
-	//		}
-	//		while ((++mapIt)->first.second != vFirst);
-	//	}
-	//	else if (mapIt->first.second == vFirst)
-	//	{
-	//		sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
-	//		do
-	//		{
-	//			sprintf(word, "%d/0/0 ", mapIt->first.first);
-	//			strcat(line, word);
-	//		}
-	//		while ((++mapIt)->first.first != vSecond);
-	//	}
-	//	else
-	//	{
-	//		MYASSERT(false);
-	//	}
-	//	tempFace = new HENullFace();
-	//	ReadFace(line, edgePairs, rawVertices, _Vertices, _TextPoints, _NormVectors, tempFace, NULL);
-	//	_Faces.push_back(tempFace);
-	//}
+	/*while (edgePairs.empty() == false)
+	{
+		GLint vFirst, vSecond;
+		mapIt = edgePairs.begin();
+		vFirst = mapIt->first.first;
+		vSecond = mapIt->first.second;
+		if ((++mapIt)->first.first == vSecond)
+		{
+			sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
+			do
+			{
+				sprintf(word, "%d/0/0 ", mapIt->first.second);
+				strcat(word, line);
+				strcpy(line, word);
+			}
+			while ((++mapIt)->first.second != vFirst);
+		}
+		else if (mapIt->first.second == vFirst)
+		{
+			sprintf(line, "%d/0/0 %d/0/0 ", vSecond, vFirst);
+			do
+			{
+				sprintf(word, "%d/0/0 ", mapIt->first.first);
+				strcat(line, word);
+			}
+			while ((++mapIt)->first.first != vSecond);
+		}
+		else
+		{
+			MYASSERT(false);
+		}
+		tempFace = new HENullFace();
+		ReadFace(line, edgePairs, rawVertices, _Vertices, _TextPoints, _NormVectors, tempFace, NULL);
+		_Faces.push_back(tempFace);
+	}*/
+	printf("%d\n", edgePairs.size());
 	delete [] line;
 	delete [] prefix;
 	delete [] strName;
